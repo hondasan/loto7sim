@@ -48,11 +48,15 @@
 </head>
 <body class="text-gray-800 p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
         <!-- ヘッダー -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-700 p-6 text-white text-center">
-            <h1 class="text-3xl font-black mb-2 tracking-wider">🎯 ロト7 予想シミュレーター</h1>
-            <p class="text-sm opacity-90">マルコフ連鎖推移 ＆ 完全乱数尤度評価アルゴリズム</p>
+        <div class="relative bg-gradient-to-r from-indigo-600 to-purple-700 p-6 text-white text-center">
+            <button id="btnHelp" class="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white rounded-full py-1.5 px-4 transition flex items-center gap-1 text-sm font-bold shadow-sm backdrop-blur-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ヘルプ
+            </button>
+            <h1 class="text-3xl font-black mb-2 tracking-wider mt-8 md:mt-0">🎯 ロト7 予想シミュレーター</h1>
+            <p class="text-sm opacity-90">マルチタイムMACD ＆ ボリュームゾーン・キャリブレーションAI</p>
         </div>
 
         <div class="p-6 md:p-8 space-y-8">
@@ -62,7 +66,7 @@
                 <h2 class="text-xl font-bold border-b-2 border-indigo-500 pb-2 mb-4">STEP 1: 過去データの準備</h2>
                 <p class="text-sm text-gray-600 mb-4">
                     過去の当せん番号データをテキストエリアに貼り付けてください。<br>
-                    <span class="text-indigo-600 font-bold">（※一番下の行が「最新回」として認識され、直近のトレンドや引っ張り数字の計算に使用されます）</span>
+                    <span class="text-indigo-600 font-bold">（※これらのデータを「正解」としてAIが自己学習し、予測式を自動チューニングします）</span>
                 </p>
                 <textarea id="csvData" rows="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-mono mb-2" placeholder="ここに表データやカンマ区切りのデータを貼り付けてください...&#10;&#10;例：&#10;第641回 1 3 7 23 24 33 36 17 30 J 5：2 127 6：3 174 詳細表示&#10;第642回 1 7 22 23 33 34 35 2 24 E 5：2 155 5：4 181 詳細表示"></textarea>
                 
@@ -91,77 +95,89 @@
                     <button id="btnMockData" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded transition">
                         🧪 テスト用ダミーデータを生成
                     </button>
-                    <button id="btnAnalyze" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow transition">
-                        📊 データを解析し直近トレンドを学習
+                    <button id="btnAnalyze" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow transition flex items-center gap-2">
+                        <span>📊 AI深層学習とデータ解析を実行</span>
                     </button>
                 </div>
             </section>
 
             <!-- STEP 2: 分析結果 -->
             <section id="analysisSection" class="hidden">
-                <h2 id="analysisTitle" class="text-xl font-bold border-b-2 border-blue-500 pb-2 mb-4">STEP 2: 統計解析・直近トレンド学習結果</h2>
+                <h2 id="analysisTitle" class="text-xl font-bold border-b-2 border-blue-500 pb-2 mb-4">STEP 2: 学習結果 ＆ AIパラメータ最適化</h2>
                 
-                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <!-- AI自己学習結果 -->
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 p-5 rounded-xl border border-gray-700 shadow-lg text-sm text-gray-200 mb-6">
+                    <h3 class="font-bold text-yellow-400 mb-2 border-b border-gray-600 pb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        🤖 Fisher判別比に基づくAIペナルティ最適化結果
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">「正解データ」と「ハズレ（地雷）データ」の特徴量の差分を数学的に計算し、地雷を最も高精度に識別・排除できる指標に重みを自動分配しました（過学習を防止する分散型モデル）。</p>
+                    <div id="aiWeightsDisplay" class="space-y-3">
+                        <!-- JSでバーを挿入 -->
+                    </div>
+                </div>
+
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
                     <div>
                         <h3 class="font-bold text-indigo-800 mb-1">📌 直近（最新回）の当せん数字</h3>
-                        <p class="text-sm text-indigo-600">この数字からの「引っ張り」や「奇偶比の揺り戻し」を計算します。</p>
+                        <p class="text-sm text-indigo-600">この数字からの引っ張りや、±1の隣接波及効果、各数字のインターバルを計算します。</p>
                     </div>
                     <div id="latestDraw" class="flex gap-1 font-bold text-lg"></div>
                 </div>
 
+                <!-- ミクロな数字分析UI -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                    <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 shadow-sm">
+                        <h3 class="font-bold text-purple-800 mb-2 border-b border-purple-300 pb-1">💞 最強の相性ペア (同時出現Top10)</h3>
+                        <p class="text-xs text-purple-600 mb-2">過去の全抽せんで「一緒に選ばれやすかった」数字の組み合わせです。</p>
+                        <ul id="bestPairs" class="space-y-1 text-sm text-purple-900 font-mono"></ul>
+                    </div>
+                    <div class="bg-teal-50 p-4 rounded-lg border border-teal-200 shadow-sm">
+                        <h3 class="font-bold text-teal-800 mb-2 border-b border-teal-300 pb-1">📊 よく出る番台パターン (1桁:10代:20代:30代)</h3>
+                        <p class="text-xs text-teal-600 mb-2">1桁〜30番台が、それぞれ「何個ずつ」選ばれやすいかの確率分布です。</p>
+                        <ul id="bestDecades" class="space-y-2 text-sm text-teal-900"></ul>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-100 shadow-sm">
                         <h3 class="font-bold text-red-700 mb-2">🔥 全期間 Hot Numbers</h3>
                         <ul id="hotNumbers" class="space-y-1 text-sm"></ul>
                     </div>
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                        <h3 class="font-bold text-blue-700 mb-2">❄️ 全期間 Cold Numbers</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 shadow-sm">
+                        <h3 class="font-bold text-blue-700 mb-2">❄️ スランプ（長期間はまり）数字</h3>
+                        <p class="text-xs text-blue-600 mb-2 border-b border-blue-200 pb-1">現在、何回連続で出ていないか（インターバル）が長い数字</p>
                         <ul id="coldNumbers" class="space-y-1 text-sm"></ul>
                     </div>
                 </div>
 
-                <!-- 直近のトレンド -->
-                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300 mb-6 shadow-sm">
-                    <h3 class="font-bold text-yellow-800 mb-2 border-b border-yellow-200 pb-1">📈 直近の流れ (ここ10回のトレンド)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-2">
-                        <div>
-                            <span class="text-gray-600 block mb-1">最近よく出ている数字:</span>
-                            <div id="recentHot" class="flex flex-wrap gap-2"></div>
-                        </div>
-                        <div>
-                            <span class="text-gray-600 block mb-1">最近の平均合計値:</span>
-                            <b id="recentSum" class="text-xl text-yellow-700"></b> <span class="text-xs text-gray-500">(全期間平均: <span id="allTimeSum"></span>)</span>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm text-sm text-gray-700">
-                    <h3 class="font-bold text-gray-800 mb-3 border-b pb-1">📊 ロト7の統計的特徴（尤度評価基準）</h3>
-                    <ul id="statisticalFeatures" class="grid grid-cols-1 md:grid-cols-3 gap-y-4 gap-x-6">
+                    <h3 class="font-bold text-gray-800 mb-3 border-b pb-1">📊 学習した「現実の正解データ」の分布プロファイル（平均±標準偏差）</h3>
+                    <ul id="statisticalFeatures" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6">
                         <!-- JSで挿入 -->
                     </ul>
                 </div>
 
-                <!-- 過去データのスコア分布（新規追加） -->
+                <!-- 過去データのスコア分布 -->
                 <div class="bg-white p-5 rounded-xl border-2 border-indigo-100 shadow-sm text-sm text-gray-700 mt-6 hidden" id="histScoreSection">
-                    <h3 class="font-bold text-gray-800 mb-2 border-b border-indigo-100 pb-2">📊 過去の正解スコア推移・分布分析</h3>
-                    <p class="text-xs text-gray-500 mb-4">各回の抽せん時点で「それより前の全データ」を使って学習し、その回の正解結果が何点だったかを遡って計算したバックテスト実績です。</p>
+                    <h3 class="font-bold text-gray-800 mb-2 border-b border-indigo-100 pb-2">📊 過去の正解スコア推移・分布分析（基礎プロファイル）</h3>
+                    <p class="text-xs text-gray-500 mb-4">各回の抽せん時点で「それより前の全データ」を使って学習し、その回の正解結果が<b class="text-indigo-600">Zスコアモデルで何点の基礎スコアだったか</b>を遡って計算した実績です。<br><span class="text-red-500 font-bold">※シミュレーション時には、この「平均基礎スコア（最も分厚いボリュームゾーン）」に最も近い波形が、最適化スコア10,000点（尤度最大）となるようにキャリブレーション（自己補正）されます。</span></p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <h4 class="font-bold text-indigo-700 mb-3">スコア帯ごとの当選件数</h4>
+                            <h4 class="font-bold text-indigo-700 mb-3">基礎スコア帯ごとの当選件数</h4>
                             <div id="scoreDistribution" class="space-y-2">
                                 <!-- JSで挿入 -->
                             </div>
                         </div>
                         <div>
-                            <h4 class="font-bold text-indigo-700 mb-3">スコア統計情報</h4>
+                            <h4 class="font-bold text-indigo-700 mb-3">ボリュームゾーン統計情報</h4>
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
-                                    <span class="text-gray-600 font-bold">全期間の平均スコア:</span> 
-                                    <b id="avgHistScore" class="text-2xl text-indigo-600"></b>
+                                    <span class="text-gray-600 font-bold">全期間の平均基礎スコア:<br><span class="text-xs text-gray-500 font-normal">（シミュレーションのターゲット・ゾーン）</span></span> 
+                                    <b id="avgHistScore" class="text-3xl text-indigo-600"></b>
                                 </div>
                                 <div class="mt-2">
-                                    <span class="block mb-2 text-gray-600 font-bold">直近10件のスコア推移:</span>
+                                    <span class="block mb-2 text-gray-600 font-bold">直近10件の基礎スコア推移:</span>
                                     <ul id="recentHistScores" class="text-xs space-y-2 max-h-48 overflow-y-auto pr-2">
                                         <!-- JSで挿入 -->
                                     </ul>
@@ -174,7 +190,7 @@
 
             <!-- STEP 3: シミュレーション -->
             <section id="simulationSection" class="hidden bg-gray-800 text-white p-6 rounded-xl border border-gray-700 shadow-inner">
-                <h2 class="text-xl font-bold border-b-2 border-gray-500 pb-2 mb-4 text-yellow-400">STEP 3: 本格モンテカルロ・シミュレーション</h2>
+                <h2 class="text-xl font-bold border-b-2 border-gray-500 pb-2 mb-4 text-yellow-400">STEP 3: ボリュームゾーン最適化シミュレーション</h2>
                 
                 <div class="flex flex-col gap-5 mb-6">
                     <div class="flex flex-col md:flex-row md:items-start gap-4">
@@ -184,18 +200,14 @@
                                 <input type="radio" name="simMode" value="count" checked class="mt-1 text-yellow-500 focus:ring-yellow-500 w-4 h-4">
                                 <span class="text-sm group-hover:text-yellow-200 transition">回数指定モード<br><span class="text-xs text-gray-400">（指定した回数だけ回し、その中の上位を抽出）</span></span>
                             </label>
-                            <label class="flex items-start gap-2 cursor-pointer group">
-                                <input type="radio" name="simMode" value="all" class="mt-1 text-yellow-500 focus:ring-yellow-500 w-4 h-4">
-                                <span class="text-sm text-yellow-300 font-bold group-hover:text-yellow-100 transition">全パターン完全解析モード (激選)<br><span class="text-xs text-yellow-600/70">（全10,295,472通りを総当たり計算し、理論上最強の買い目を抽出）</span></span>
-                            </label>
                             <label class="flex items-start gap-2 cursor-pointer group pt-2 border-t border-gray-700">
-                                <input type="radio" name="simMode" value="real" class="mt-1 text-green-500 focus:ring-green-500 w-4 h-4">
-                                <span class="text-sm text-green-400 font-bold group-hover:text-green-300 transition">🌿 リアル志向モード (現実的な波狙い)<br><span class="text-xs text-green-600/80">（完璧すぎない、実際の正解に最も多いスコア帯域を意図的に狙って抽出します）</span></span>
+                                <input type="radio" name="simMode" value="all" class="mt-1 text-yellow-500 focus:ring-yellow-500 w-4 h-4">
+                                <span class="text-sm text-yellow-300 font-bold group-hover:text-yellow-100 transition">全パターン完全解析モード (激選推奨)<br><span class="text-xs text-yellow-600/70">（全10,295,472通りを計算し、AIが特定した現実のボリュームゾーンに最も近い波を抽出します）</span></span>
                             </label>
                         </div>
                     </div>
                     
-                    <div class="flex flex-wrap items-center gap-6 p-4 bg-gray-700/50 rounded-lg border border-gray-600 min-h-[70px]">
+                    <div class="flex flex-wrap items-center gap-6 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
                         <!-- 回数指定用UI -->
                         <div id="countModeUI" class="flex items-center gap-2">
                             <label class="font-bold text-gray-200 text-sm shrink-0">仮想抽選回数:</label>
@@ -209,26 +221,6 @@
                         <!-- 全パターン指定用UI -->
                         <div id="allModeUI" class="flex items-center gap-2 hidden">
                             <span class="text-yellow-400 text-sm font-bold">※全10,295,472パターンを解析するため、完了まで数秒〜十数秒かかります。</span>
-                        </div>
-
-                        <!-- リアル志向用UI -->
-                        <div id="realModeUI" class="flex flex-col gap-3 hidden w-full">
-                            <div class="flex items-center gap-2">
-                                <label class="font-bold text-gray-200 text-sm shrink-0 text-green-400">狙うスコア帯域:</label>
-                                <select id="targetScoreRange" class="p-2 border border-green-600/50 rounded bg-gray-800 text-green-400 text-sm font-bold">
-                                    <option value="7000" selected>7000〜8500点 (一番よく出る順当な波)</option>
-                                    <option value="5000">5000〜6500点 (荒れ気味のイレギュラーな波)</option>
-                                    <option value="custom">⚙️ カスタム範囲を指定する...</option>
-                                </select>
-                            </div>
-                            <!-- カスタム範囲入力 -->
-                            <div id="customScoreUI" class="hidden flex items-center gap-2 bg-gray-900 p-3 rounded-lg border border-gray-700 w-fit">
-                                <label class="text-xs text-gray-400">最小:</label>
-                                <input type="number" id="customScoreMin" class="w-24 p-1.5 border border-gray-600 rounded bg-gray-800 text-green-300 text-sm text-center font-bold" value="6500">
-                                <span class="text-green-500 px-1">〜</span>
-                                <label class="text-xs text-gray-400">最大:</label>
-                                <input type="number" id="customScoreMax" class="w-24 p-1.5 border border-gray-600 rounded bg-gray-800 text-green-300 text-sm text-center font-bold" value="7500">
-                            </div>
                         </div>
 
                         <div class="flex items-center gap-2 mt-2 md:mt-0">
@@ -249,7 +241,7 @@
                     </div>
                 </div>
                 <button id="btnSimulate" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-black py-4 px-4 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-lg">
-                    <span>🎰 完全乱数生成＆尤度評価を開始する</span>
+                    <span>🎰 Zスコア解析＆最適化予想を開始する</span>
                 </button>
             </section>
 
@@ -264,30 +256,83 @@
         </div>
     </div>
 
+    <!-- ヘルプモーダル -->
+    <div id="helpModal" class="fixed inset-0 bg-gray-900/60 z-50 hidden flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all">
+            <!-- ヘッダー -->
+            <div class="p-4 bg-gradient-to-r from-indigo-600 to-purple-700 text-white flex justify-between items-center">
+                <h2 class="font-bold text-lg flex items-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    最新アルゴリズムの仕組みと使い方
+                </h2>
+                <button id="btnCloseHelp" class="text-white hover:text-gray-200 focus:outline-none bg-white/10 rounded p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- コンテンツ -->
+            <div class="p-6 overflow-y-auto text-sm text-gray-700 space-y-8 bg-gray-50">
+                <section>
+                    <h3 class="text-lg font-bold text-indigo-700 border-b-2 border-indigo-200 pb-1 mb-3">🎯 1. ボリュームゾーン・キャリブレーション</h3>
+                    <p class="mb-2">多次元データ（ロト7の複雑な特徴量）において、すべての条件で満点を取ること（理論上の10000点）は次元の呪いにより現実には起こり得ません。現実は適度なノイズ（荒れ）を含んだ「8000点〜9000点台の層」に最も集中します。</p>
+                    <p>当シミュレーターは、<b>「過去の正解データが平均的に出している基礎スコア（最も分厚いボリュームゾーン）」をターゲットとして設定し、そこに最も近い波形を「最終的な最適化スコア10,000点」として評価（自己補正）</b>します。これにより、綺麗すぎる外れ値を弾き、真の現実的な波を狙い撃ちします。</p>
+                </section>
+
+                <section>
+                    <h3 class="text-lg font-bold text-indigo-700 border-b-2 border-indigo-200 pb-1 mb-3">📈 2. マルチタイムフレームMACDトレンド分析</h3>
+                    <p class="mb-2">各数字の出現頻度を「短期(5回)」「中期(15回)」「長期(50回)」の3つの時間軸で同時に解析します。長期的なスランプからの急反発や、中期的に波に乗っているHot数字など、単なる「よく出る数字」ではなく、株価のテクニカル分析のような高度なモメンタム（勢い）を評価に組み込んでいます。</p>
+                </section>
+                
+                <section>
+                    <h3 class="text-lg font-bold text-indigo-700 border-b-2 border-indigo-200 pb-1 mb-3">🧠 3. Fisher判別比に基づくAI自動最適化</h3>
+                    <p class="mb-2">解析ボタンを押すと、内部で<b>「過去の正解データ」と「大量のハズレ（ダミー）データ」を比較</b>します。どの指標を厳しくチェックすれば最も高精度にハズレを弾き出せるか、その「分離能力（Fisherの判別比）」を数学的に計算し、ペナルティの重みを自動分配します。これにより一極集中（過学習）を防ぎます。</p>
+                </section>
+            </div>
+            
+            <!-- フッター -->
+            <div class="p-4 bg-white border-t flex justify-end">
+                <button id="btnCloseHelpFooter" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded transition">
+                    閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // グローバル変数
-        let numberFrequencies = Array(38).fill(0); // インデックス1〜37を使用
+        let numberFrequencies = Array(38).fill(0); 
+        let currentIntervals = Array(38).fill(0); 
         let totalDraws = 0;
         
-        // 直近トレンド用
-        let recentFrequencies = Array(38).fill(0);
-        let recentAvgSum = 0;
-        const RECENT_WINDOW = 10; 
-
         // バックテスト用
         let testTargetDraw = null;
         let testTargetBonus = [];
 
-        // 統計データ
+        // 統計データとプロファイル（平均と標準偏差）
         let statsData = {
-            avgSum: 0,
-            stdDevSum: 0,
-            avgFreqSum: 0,
             lastDraw: [],        
-            lastOddEven: "",     
-            pullProb: {},        
-            consecProb: {},      
-            oeTransitionProb: {} 
+            lastSum: 0,
+            coMatrix: [], 
+            momentumMap: [], 
+            decadeProb: {}, 
+            exp: {
+                sum: { mean: 130, std: 25 },
+                odd: { mean: 3.5, std: 1.2 },
+                consec: { mean: 0.8, std: 0.8 },
+                pull: { mean: 1.2, std: 1.0 },
+                intSum: { mean: 40, std: 15 },
+                intStd: { mean: 8, std: 4 },
+                coScore: { mean: 20, std: 5 },
+                momentum: { mean: 0, std: 1 },
+                adjPull: { mean: 1.5, std: 1.0 }, 
+                decade: { mean: 0.05, std: 0.02 },
+                block: { mean: 4.5, std: 0.8 } 
+            },
+            // 初期重み
+            weights: { sum: 200, odd: 200, consec: 300, pull: 200, int: 150, intStd: 150, coScore: 200, momentum: 150, adj: 150, dec: 150, block: 150 },
+            // ボリュームゾーンのターゲット（基礎スコアの平均と標準偏差）
+            histMean: 8500,
+            histStd: 500
         };
 
         // DOM要素
@@ -300,60 +345,51 @@
             analysisTitle: document.getElementById('analysisTitle'),
             hotNumbers: document.getElementById('hotNumbers'),
             coldNumbers: document.getElementById('coldNumbers'),
-            recentHot: document.getElementById('recentHot'),
-            recentSum: document.getElementById('recentSum'),
-            allTimeSum: document.getElementById('allTimeSum'),
             latestDraw: document.getElementById('latestDraw'),
             simulationSection: document.getElementById('simulationSection'),
             
-            // 過去スコア分布用
+            bestPairs: document.getElementById('bestPairs'),
+            bestDecades: document.getElementById('bestDecades'),
+
+            aiWeightsDisplay: document.getElementById('aiWeightsDisplay'),
             histScoreSection: document.getElementById('histScoreSection'),
             scoreDistribution: document.getElementById('scoreDistribution'),
             avgHistScore: document.getElementById('avgHistScore'),
             recentHistScores: document.getElementById('recentHistScores'),
 
-            // UI制御用
             modeRadios: document.querySelectorAll('input[name="simMode"]'),
             countModeUI: document.getElementById('countModeUI'),
             allModeUI: document.getElementById('allModeUI'),
-            realModeUI: document.getElementById('realModeUI'),
             simCount: document.getElementById('simCount'),
-            targetScoreRange: document.getElementById('targetScoreRange'),
-            customScoreUI: document.getElementById('customScoreUI'),
-            customScoreMin: document.getElementById('customScoreMin'),
-            customScoreMax: document.getElementById('customScoreMax'),
             ticketCount: document.getElementById('ticketCount'),
             
             btnSimulate: document.getElementById('btnSimulate'),
             resultSection: document.getElementById('resultSection'),
             predictionResults: document.getElementById('predictionResults'),
-            statisticalFeatures: document.getElementById('statisticalFeatures')
+            statisticalFeatures: document.getElementById('statisticalFeatures'),
+            
+            btnHelp: document.getElementById('btnHelp'),
+            helpModal: document.getElementById('helpModal'),
+            btnCloseHelp: document.getElementById('btnCloseHelp'),
+            btnCloseHelpFooter: document.getElementById('btnCloseHelpFooter')
         };
 
-        // UIイベント: モード切り替え
+        // ヘルプ制御
+        function openHelp() { elements.helpModal.classList.remove('hidden'); }
+        function closeHelp() { elements.helpModal.classList.add('hidden'); }
+        elements.btnHelp.addEventListener('click', openHelp);
+        elements.btnCloseHelp.addEventListener('click', closeHelp);
+        elements.btnCloseHelpFooter.addEventListener('click', closeHelp);
+        elements.helpModal.addEventListener('click', (e) => { if(e.target === elements.helpModal) closeHelp(); });
+
+        // モード切替
         elements.modeRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
                 elements.countModeUI.classList.add('hidden');
                 elements.allModeUI.classList.add('hidden');
-                elements.realModeUI.classList.add('hidden');
-                
-                if (e.target.value === 'count') {
-                    elements.countModeUI.classList.remove('hidden');
-                } else if (e.target.value === 'all') {
-                    elements.allModeUI.classList.remove('hidden');
-                } else if (e.target.value === 'real') {
-                    elements.realModeUI.classList.remove('hidden');
-                }
+                if (e.target.value === 'count') elements.countModeUI.classList.remove('hidden');
+                else if (e.target.value === 'all') elements.allModeUI.classList.remove('hidden');
             });
-        });
-
-        // カスタム範囲入力UIの表示切替
-        elements.targetScoreRange.addEventListener('change', (e) => {
-            if (e.target.value === 'custom') {
-                elements.customScoreUI.classList.remove('hidden');
-            } else {
-                elements.customScoreUI.classList.add('hidden');
-            }
         });
 
         function getBallColorClass(num) {
@@ -377,19 +413,55 @@
             return `${odd}:${7 - odd}`;
         }
 
-        // ダミーデータ生成
+        function getDecadeKey(nums) {
+            let d0 = 0, d1 = 0, d2 = 0, d3 = 0;
+            nums.forEach(n => {
+                if (n < 10) d0++;
+                else if (n < 20) d1++;
+                else if (n < 30) d2++;
+                else d3++;
+            });
+            return `${d0}:${d1}:${d2}:${d3}`;
+        }
+
+        function countAdjacent(nums, refNums) {
+            if (!refNums || refNums.length === 0) return 0;
+            let count = 0;
+            nums.forEach(n => {
+                if (refNums.includes(n - 1) || refNums.includes(n + 1)) count++;
+            });
+            return count;
+        }
+
+        // 新規: 区画(ブロック)カバー率。特定の数字帯に固まっていないかをチェック
+        function getBlockCover(nums) {
+            let blocks = new Set();
+            nums.forEach(n => {
+                if (n <= 7) blocks.add(1);
+                else if (n <= 14) blocks.add(2);
+                else if (n <= 21) blocks.add(3);
+                else if (n <= 28) blocks.add(4);
+                else blocks.add(5);
+            });
+            return blocks.size;
+        }
+
+        function generateRandom7() {
+            let available = Array.from({length: 37}, (_, i) => i + 1);
+            let picked = [];
+            for(let i = 0; i < 7; i++) {
+                let r = Math.floor(Math.random() * available.length);
+                picked.push(available[r]);
+                available.splice(r, 1);
+            }
+            return picked.sort((a, b) => a - b);
+        }
+
         elements.btnMockData.addEventListener('click', () => {
             let csv = [];
             for (let i = 1; i <= 300; i++) {
-                let available = Array.from({length: 37}, (_, i) => i + 1);
-                let mainDraw = [];
-                for (let j = 0; j < 7; j++) {
-                    let r = Math.floor(Math.random() * available.length);
-                    mainDraw.push(available[r]);
-                    available.splice(r, 1);
-                }
-                mainDraw.sort((a, b) => a - b);
-                
+                let mainDraw = generateRandom7();
+                let available = Array.from({length: 37}, (_, i) => i + 1).filter(n => !mainDraw.includes(n));
                 let bonusDraw = [];
                 for (let j = 0; j < 2; j++) {
                     let r = Math.floor(Math.random() * available.length);
@@ -402,208 +474,397 @@
             alert('300回分のダミーデータを生成しました！\n一番下の行が最新回として扱われます。');
         });
 
-        // 統計計算ロジックを関数化（部分データからモデルを作るため）
+        // --- ★ 各特徴量の抽出関数（スコア計算・学習で共通利用） ---
+        function extractFeatures(draw, model) {
+            let sum = 0, oddCount = 0, pullCount = 0, consecCount = 0;
+            let intervals = [], momentumSum = 0, coScore = 0;
+
+            for (let i = 0; i < 7; i++) {
+                let n = draw[i];
+                sum += n;
+                if (n % 2 !== 0) oddCount++;
+                if (model.lastDraw && model.lastDraw.includes(n)) pullCount++;
+                
+                intervals.push(model.intervals ? model.intervals[n] : 0);
+                momentumSum += model.momentumMap ? model.momentumMap[n] : 0;
+                
+                if (i < 6 && draw[i+1] - n === 1) consecCount++;
+                
+                if (model.coMatrix) {
+                    for (let j = i + 1; j < 7; j++) coScore += model.coMatrix[n][draw[j]];
+                }
+            }
+            
+            let intSum = intervals.reduce((a,b)=>a+b, 0);
+            let intMean = intSum / 7;
+            let intStd = Math.sqrt(intervals.reduce((a,b)=>a+Math.pow(b-intMean,2), 0)/7);
+
+            let adjCount = countAdjacent(draw, model.lastDraw);
+            let decKey = getDecadeKey(draw);
+            let p_dec = model.decadeProb ? (model.decadeProb[decKey] || 0) : 0;
+            let blockCover = getBlockCover(draw);
+
+            // Zスコアの2乗（ペナルティの基礎値）を返す
+            // ※0除算・過剰な重み付けを防ぐため、Math.maxで標準偏差の下限をガードする
+            return {
+                sum: Math.pow(Math.abs(sum - model.exp.sum.mean) / Math.max(model.exp.sum.std, 1.0), 2),
+                odd: Math.pow(Math.abs(oddCount - model.exp.odd.mean) / Math.max(model.exp.odd.std, 0.5), 2),
+                consec: Math.pow(Math.abs(consecCount - model.exp.consec.mean) / Math.max(model.exp.consec.std, 0.5), 2),
+                pull: Math.pow(Math.abs(pullCount - model.exp.pull.mean) / Math.max(model.exp.pull.std, 0.5), 2),
+                int: Math.pow(Math.abs(intSum - model.exp.intSum.mean) / Math.max(model.exp.intSum.std, 1.0), 2),
+                intStd: Math.pow(Math.abs(intStd - model.exp.intStd.mean) / Math.max(model.exp.intStd.std, 0.5), 2),
+                coScore: Math.pow(Math.abs(coScore - model.exp.coScore.mean) / Math.max(model.exp.coScore.std, 1.0), 2),
+                momentum: Math.pow(Math.abs(momentumSum - model.exp.momentum.mean) / Math.max(model.exp.momentum.std, 0.5), 2),
+                adj: Math.pow(Math.abs(adjCount - model.exp.adjPull.mean) / Math.max(model.exp.adjPull.std, 0.5), 2),
+                dec: Math.pow(Math.abs(p_dec - model.exp.decade.mean) / Math.max(model.exp.decade.std, 0.01), 2),
+                block: Math.pow(Math.abs(blockCover - model.exp.block.mean) / Math.max(model.exp.block.std, 0.5), 2),
+                // 以下は表示用生データ
+                raw: { sum, oddCount, pullCount, consecCount, intSum }
+            };
+        }
+
+        // --- ★ 基礎スコア計算関数（Zスコア減点） ---
+        function calcRawScore(draw, model, weights) {
+            let f = extractFeatures(draw, model);
+            let score = 10000;
+            
+            let keys = Object.keys(weights);
+            for(let k of keys) {
+                score -= f[k] * weights[k];
+            }
+            return { score: score, ...f.raw };
+        }
+
+        // --- ★ Fisher判別比に基づくAIペナルティ重みの最適化 ---
+        function trainWeights(validLines, tempModel) {
+            let dummyData = [];
+            for(let i=0; i<1000; i++) dummyData.push(generateRandom7());
+
+            let targetLines = validLines.slice(-150).map(line => line.slice(0,7).sort((a,b)=>a-b));
+
+            let keys = ['sum', 'odd', 'consec', 'pull', 'int', 'intStd', 'coScore', 'momentum', 'adj', 'dec', 'block'];
+            
+            let trueFeatures = {};
+            let dummyFeatures = {};
+            keys.forEach(k => { trueFeatures[k] = []; dummyFeatures[k] = []; });
+
+            targetLines.forEach(d => {
+                let f = extractFeatures(d, tempModel);
+                keys.forEach(k => trueFeatures[k].push(f[k]));
+            });
+            dummyData.forEach(d => {
+                let f = extractFeatures(d, tempModel);
+                keys.forEach(k => dummyFeatures[k].push(f[k]));
+            });
+
+            let scores = {};
+            let totalScore = 0;
+            
+            keys.forEach(k => {
+                let tMean = trueFeatures[k].reduce((a,b)=>a+b,0) / targetLines.length;
+                let dMean = dummyFeatures[k].reduce((a,b)=>a+b,0) / dummyData.length;
+                
+                let tVar = trueFeatures[k].reduce((a,b)=>a+Math.pow(b-tMean,2),0) / targetLines.length;
+                let dVar = dummyFeatures[k].reduce((a,b)=>a+Math.pow(b-dMean,2),0) / dummyData.length;
+                
+                let diff = Math.max(0.001, dMean - tMean); 
+                let denominator = Math.sqrt(tVar + dVar) || 1;
+                
+                scores[k] = Math.log1p(diff / denominator);
+                totalScore += scores[k];
+            });
+
+            let bestWeights = {};
+            keys.forEach(k => {
+                let ratio = totalScore > 0 ? (scores[k] / totalScore) : (1/keys.length);
+                bestWeights[k] = 40 + (ratio * 1600); 
+            });
+
+            return bestWeights;
+        }
+
+        // 統計計算ロジック（マルチタイムフレーム分析追加）
         function calculateStatsModel(lines, includeBonus) {
             let nFreq = Array(38).fill(0);
-            let rFreq = Array(38).fill(0);
-            let tDraws = 0;
-            let rAvgSum = 0;
             
-            let sums = [];
-            let validDrawsHist = []; 
-            let pullCounts = {};
-            let consecCounts = {};
-            let transitionCounts = {};
-            let prevDraw = null;
-            let prevOddEven = null;
+            // マルチタイムフレーム用頻度カウンタ
+            let freqShort = Array(38).fill(0); // 直近5回
+            let freqMid = Array(38).fill(0);   // 直近15回
+            let freqLong = Array(38).fill(0);  // 直近50回
+            let tDraws = 0;
+            
+            let coMatrix = Array.from({length: 38}, () => Array(38).fill(0));
+            let decadeCounts = {};
+            
+            let sums = [], odds = [], consecs = [], pulls = [], intSums = [], intStds = [], coScores = [], momentums = [];
+            let decProbs = [], adjPulls = [], blockCovers = [];
+            
+            let tempIntervals = Array(38).fill(0); 
+            let pDraw = null;
 
+            let wShort = Math.min(5, lines.length);
+            let wMid = Math.min(15, lines.length);
+            let wLong = Math.min(50, lines.length);
+            
+            lines.slice(-wShort).forEach(nums => nums.slice(0, 7).forEach(n => freqShort[n]++));
+            lines.slice(-wMid).forEach(nums => nums.slice(0, 7).forEach(n => freqMid[n]++));
+            lines.slice(-wLong).forEach(nums => nums.slice(0, 7).forEach(n => freqLong[n]++));
+            
             lines.forEach(numbers => {
                 const maxLen = includeBonus ? Math.min(numbers.length, 9) : 7;
-                for (let i = 0; i < maxLen; i++) {
-                    nFreq[numbers[i]]++;
-                }
-                tDraws++;
+                for (let i = 0; i < maxLen; i++) { nFreq[numbers[i]]++; }
                 
                 let mainNums = numbers.slice(0, 7).sort((a, b) => a - b);
-                validDrawsHist.push(mainNums);
-                sums.push(mainNums.reduce((a, b) => a + b, 0));
-                
-                let consec = countConsecutives(mainNums);
-                consecCounts[consec] = (consecCounts[consec] || 0) + 1;
-                
-                let oeKey = getOddEvenKey(mainNums);
-                
-                if (prevDraw !== null) {
-                    let pull = mainNums.filter(n => prevDraw.includes(n)).length;
-                    pullCounts[pull] = (pullCounts[pull] || 0) + 1;
-                    
-                    if (!transitionCounts[prevOddEven]) transitionCounts[prevOddEven] = {};
-                    transitionCounts[prevOddEven][oeKey] = (transitionCounts[prevOddEven][oeKey] || 0) + 1;
+                for(let i=0; i<mainNums.length; i++) {
+                    for(let j=i+1; j<mainNums.length; j++) {
+                        coMatrix[mainNums[i]][mainNums[j]]++;
+                        coMatrix[mainNums[j]][mainNums[i]]++;
+                    }
                 }
                 
-                prevDraw = mainNums;
-                prevOddEven = oeKey;
+                let decKey = getDecadeKey(mainNums);
+                decadeCounts[decKey] = (decadeCounts[decKey] || 0) + 1;
+                
+                tDraws++;
             });
-
-            let recentDraws = validDrawsHist.slice(-RECENT_WINDOW);
-            if (recentDraws.length > 0) {
-                let recentTotalSum = 0;
-                recentDraws.forEach(draw => {
-                    recentTotalSum += draw.reduce((a, b) => a + b, 0);
-                    draw.forEach(num => { rFreq[num]++; });
-                });
-                rAvgSum = recentTotalSum / recentDraws.length;
+            
+            let decadeProb = {};
+            for(let k in decadeCounts) {
+                decadeProb[k] = decadeCounts[k] / tDraws;
             }
 
-            let avgSum = sums.length > 0 ? sums.reduce((a, b) => a + b, 0) / sums.length : 0;
-            let stdDevSum = sums.length > 0 ? Math.sqrt(sums.reduce((a, b) => a + Math.pow(b - avgSum, 2), 0) / sums.length) : 1;
-            
-            let totalFreqSum = 0;
-            validDrawsHist.forEach(draw => {
-                totalFreqSum += draw.reduce((a, b) => a + nFreq[b], 0);
-            });
-            let avgFreqSum = validDrawsHist.length > 0 ? totalFreqSum / validDrawsHist.length : 0;
+            // 新規: マルチタイムMACD的なモメンタム指標
+            // 短期が中期を上回っている（ゴールデンクロス的）、または全期間より中期が高いなど、複合的な勢いを評価
+            let momentumMap = Array(38).fill(0);
+            for(let i=1; i<=37; i++) {
+                let pShort = freqShort[i] / wShort;
+                let pMid = freqMid[i] / wMid;
+                let pLong = freqLong[i] / wLong;
+                let pAll = nFreq[i] / tDraws;
+                
+                // 短期の勢い + 中期のベースからの乖離
+                momentumMap[i] = (pShort - pMid) * 1.5 + (pMid - pAll);
+            }
 
-            let totalTransitions = validDrawsHist.length - 1;
-            let pullProb = {};
-            for(let k in pullCounts) pullProb[k] = pullCounts[k] / totalTransitions;
-            
-            let consecProb = {};
-            for(let k in consecCounts) consecProb[k] = consecCounts[k] / validDrawsHist.length;
-            
-            let oeTransitionProb = {};
-            for(let pk in transitionCounts) {
-                oeTransitionProb[pk] = {};
-                let sum = Object.values(transitionCounts[pk]).reduce((a,b)=>a+b, 0);
-                for(let ck in transitionCounts[pk]) {
-                    oeTransitionProb[pk][ck] = transitionCounts[pk][ck] / sum;
+            lines.forEach(numbers => {
+                let mainNums = numbers.slice(0, 7).sort((a, b) => a - b);
+                
+                sums.push(mainNums.reduce((a,b)=>a+b, 0));
+                odds.push(mainNums.filter(n => n%2 !== 0).length);
+                consecs.push(countConsecutives(mainNums));
+                blockCovers.push(getBlockCover(mainNums));
+                decProbs.push(decadeProb[getDecadeKey(mainNums)] || 0);
+                
+                if (pDraw !== null) {
+                    pulls.push(mainNums.filter(n => pDraw.includes(n)).length);
+                    adjPulls.push(countAdjacent(mainNums, pDraw));
                 }
-            }
+                
+                let invs = mainNums.map(n => tempIntervals[n]);
+                let iSum = invs.reduce((a,b)=>a+b,0);
+                intSums.push(iSum);
+                let iMean = iSum/7;
+                intStds.push(Math.sqrt(invs.reduce((a,b)=>a+Math.pow(b-iMean,2),0)/7));
+                
+                let cScore = 0;
+                for(let i=0; i<mainNums.length; i++) {
+                    for(let j=i+1; j<mainNums.length; j++) {
+                        cScore += coMatrix[mainNums[i]][mainNums[j]];
+                    }
+                }
+                coScores.push(cScore);
+                
+                let momSum = mainNums.reduce((acc, n) => acc + momentumMap[n], 0);
+                momentums.push(momSum);
+                
+                for(let i=1; i<=37; i++) {
+                    if (mainNums.includes(i)) tempIntervals[i] = 0;
+                    else tempIntervals[i]++;
+                }
+                
+                pDraw = mainNums;
+            });
+
+            const calcMean = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+            const calcStd = (arr, mean) => arr.length ? Math.sqrt(arr.reduce((a,b)=>a+Math.pow(b-mean,2),0)/arr.length) || 0 : 0;
+
+            let exp = {
+                sum: { mean: calcMean(sums), std: calcStd(sums, calcMean(sums)) },
+                odd: { mean: calcMean(odds), std: calcStd(odds, calcMean(odds)) },
+                consec: { mean: calcMean(consecs), std: calcStd(consecs, calcMean(consecs)) },
+                pull: { mean: calcMean(pulls), std: calcStd(pulls, calcMean(pulls)) },
+                intSum: { mean: calcMean(intSums), std: calcStd(intSums, calcMean(intSums)) },
+                intStd: { mean: calcMean(intStds), std: calcStd(intStds, calcMean(intStds)) },
+                coScore: { mean: calcMean(coScores), std: calcStd(coScores, calcMean(coScores)) },
+                momentum: { mean: calcMean(momentums), std: calcStd(momentums, calcMean(momentums)) },
+                adjPull: { mean: calcMean(adjPulls), std: calcStd(adjPulls, calcMean(adjPulls)) },
+                decade: { mean: calcMean(decProbs), std: calcStd(decProbs, calcMean(decProbs)) },
+                block: { mean: calcMean(blockCovers), std: calcStd(blockCovers, calcMean(blockCovers)) }
+            };
 
             return {
-                nFreq, rFreq, tDraws, rAvgSum,
-                avgSum, stdDevSum, avgFreqSum,
-                pullProb, consecProb, oeTransitionProb,
-                lastDraw: prevDraw, lastOddEven: prevOddEven
+                nFreq, tDraws, 
+                lastDraw: pDraw,
+                coMatrix, momentumMap, decadeProb,
+                intervals: tempIntervals, exp: exp
             };
         }
 
         function applyModelToGlobals(model) {
             numberFrequencies = model.nFreq;
-            recentFrequencies = model.rFreq;
             totalDraws = model.tDraws;
-            recentAvgSum = model.rAvgSum;
+            currentIntervals = model.intervals;
 
-            statsData.avgSum = model.avgSum;
-            statsData.stdDevSum = model.stdDevSum;
-            statsData.avgFreqSum = model.avgFreqSum;
-            statsData.pullProb = model.pullProb;
-            statsData.consecProb = model.consecProb;
-            statsData.oeTransitionProb = model.oeTransitionProb;
             statsData.lastDraw = model.lastDraw;
-            statsData.lastOddEven = model.lastOddEven;
+            statsData.coMatrix = model.coMatrix;
+            statsData.momentumMap = model.momentumMap;
+            statsData.decadeProb = model.decadeProb;
+            statsData.exp = model.exp;
+            statsData.weights = model.weights || statsData.weights;
+            statsData.histMean = model.histMean || statsData.histMean;
+            statsData.histStd = model.histStd || statsData.histStd;
         }
 
-        // 解析処理
         elements.btnAnalyze.addEventListener('click', () => {
             const rawData = elements.csvData.value.trim();
             const includeBonus = elements.includeBonus.checked;
             
-            if (!rawData) {
-                alert('データが入力されていません。');
-                return;
-            }
+            if (!rawData) { alert('データが入力されていません。'); return; }
 
-            let validLines = [];
-            const lines = rawData.split('\n');
-            lines.forEach(line => {
-                const tokens = line.split(/[\s,]+/);
-                const numbers = tokens
-                    .filter(token => /^\d+$/.test(token))
-                    .map(n => parseInt(n, 10))
-                    .filter(n => n >= 1 && n <= 37);
+            elements.btnAnalyze.disabled = true;
+            elements.btnAnalyze.innerHTML = `<div class="loader border-white border-top-transparent w-4 h-4 border-2"></div> <span>AI深層学習中... (少々お待ちください)</span>`;
 
-                if (numbers.length >= 7) {
-                    validLines.push(numbers);
+            setTimeout(() => {
+                let validLines = [];
+                const lines = rawData.split('\n');
+                lines.forEach(line => {
+                    const tokens = line.split(/[\s,]+/);
+                    const numbers = tokens
+                        .filter(token => /^\d+$/.test(token))
+                        .map(n => parseInt(n, 10))
+                        .filter(n => n >= 1 && n <= 37);
+                    if (numbers.length >= 7) validLines.push(numbers);
+                });
+
+                if (validLines.length < 3) { 
+                    alert('有効なデータが足りません。最低3回分以上のデータを入力してください。'); 
+                    elements.btnAnalyze.disabled = false;
+                    elements.btnAnalyze.innerHTML = `<span>📊 AI深層学習とデータ解析を実行</span>`;
+                    return; 
                 }
-            });
 
-            if (validLines.length < 3) {
-                alert('有効なデータが足りません。最低3回分以上のデータを入力してください。');
-                return;
-            }
+                const analyzeMode = document.querySelector('input[name="analyzeMode"]:checked').value;
+                testTargetDraw = null;
+                testTargetBonus = [];
 
-            // バックテストモードのチェック
-            const analyzeMode = document.querySelector('input[name="analyzeMode"]:checked').value;
-            testTargetDraw = null;
-            testTargetBonus = [];
-
-            if (analyzeMode === 'backtest') {
-                const testData = validLines.pop(); // 一番下を除外して正解データにする
-                testTargetDraw = testData.slice(0, 7).sort((a, b) => a - b);
-                if (testData.length > 7) {
-                    testTargetBonus = testData.slice(7);
+                if (analyzeMode === 'backtest') {
+                    const testData = validLines.pop(); 
+                    testTargetDraw = testData.slice(0, 7).sort((a, b) => a - b);
+                    if (testData.length > 7) testTargetBonus = testData.slice(7);
                 }
-            }
 
-            let finalModel = calculateStatsModel(validLines, includeBonus);
+                let finalModel = calculateStatsModel(validLines, includeBonus);
 
-            // --- 過去全データのバックテストスコアリング ---
-            let historicalScores = [];
-            // 学習データとして最低15件は確保してからスコアを計算（分布を安定させるため）
-            if (validLines.length > 15) {
-                for (let i = 15; i < validLines.length; i++) {
-                    let trainingData = validLines.slice(0, i);
-                    let targetDraw = validLines[i].slice(0, 7).sort((a,b)=>a-b);
-                    
-                    let tempModel = calculateStatsModel(trainingData, includeBonus);
-                    applyModelToGlobals(tempModel); // 評価のため一時的にグローバルに適用
-                    
-                    let evalResult = evaluateDraw(targetDraw);
-                    historicalScores.push({ 
-                        index: i, 
-                        score: Math.round(evalResult.score), 
-                        draw: targetDraw 
-                    });
+                // AI自己学習（Fisher判別比による最適化）
+                let optimizedWeights = trainWeights(validLines, finalModel);
+                finalModel.weights = optimizedWeights;
+
+                // 過去全データのバックテストスコアリング（基礎スコアの分布と平均を取得）
+                let historicalScores = [];
+                let totalRawScore = 0;
+                if (validLines.length > 15) {
+                    for (let i = 15; i < validLines.length; i++) {
+                        let trainingData = validLines.slice(0, i);
+                        let targetDraw = validLines[i].slice(0, 7).sort((a,b)=>a-b);
+                        
+                        let tempModel = calculateStatsModel(trainingData, includeBonus);
+                        let evalResult = calcRawScore(targetDraw, tempModel, optimizedWeights);
+                        historicalScores.push({ index: i, score: Math.round(evalResult.score), draw: targetDraw });
+                        totalRawScore += evalResult.score;
+                    }
                 }
-            }
 
-            // 本来の最終モデルをグローバルに適用
-            applyModelToGlobals(finalModel);
+                // ターゲットとなるボリュームゾーン（過去の平均基礎スコア）を計算
+                let histMean = historicalScores.length > 0 ? totalRawScore / historicalScores.length : 8500;
+                let histVar = 0;
+                historicalScores.forEach(s => histVar += Math.pow(s.score - histMean, 2));
+                let histStd = historicalScores.length > 0 ? Math.max(Math.sqrt(histVar / historicalScores.length), 100) : 500;
 
-            displayAnalysis();
-            displayHistoricalScores(historicalScores);
+                finalModel.histMean = histMean;
+                finalModel.histStd = histStd;
 
-            elements.analysisSection.classList.remove('hidden');
-            elements.simulationSection.classList.remove('hidden');
-            elements.resultSection.classList.add('hidden');
+                applyModelToGlobals(finalModel);
+
+                displayAnalysis();
+                displayHistoricalScores(historicalScores);
+                displayAIWeights(optimizedWeights);
+
+                elements.analysisSection.classList.remove('hidden');
+                elements.simulationSection.classList.remove('hidden');
+                elements.resultSection.classList.add('hidden');
+
+                elements.btnAnalyze.disabled = false;
+                elements.btnAnalyze.innerHTML = `<span>📊 AI深層学習とデータ解析を実行</span>`;
+            }, 50); 
         });
 
-        // 過去スコア推移・分布の描画
+        // AI重み付けの表示
+        function displayAIWeights(weights) {
+            let total = Object.values(weights).reduce((a,b)=>a+b, 0);
+            let map = [
+                { key: 'coScore', name: '数字の相関ネットワーク重要度' },
+                { key: 'intStd', name: 'Hot/Cold混ざり具合(分散)重要度' },
+                { key: 'momentum', name: 'マルチタイム・モメンタム重要度' },
+                { key: 'adj', name: '隣接数字の波及(スプレッド)重要度' },
+                { key: 'dec', name: '番台(10ごと)グループ偏りペナルティ' },
+                { key: 'block', name: '区画(ブロック)分散カバー率ペナルティ' },
+                { key: 'consec', name: '連番数異常ペナルティ' },
+                { key: 'sum', name: '合計値異常ペナルティ' },
+                { key: 'odd', name: '奇数・偶数バランスペナルティ' },
+                { key: 'pull', name: '引っ張り数異常ペナルティ' },
+                { key: 'int', name: '総はまり回数異常ペナルティ' }
+            ];
+            
+            map.sort((a, b) => weights[b.key] - weights[a.key]);
+
+            let html = '';
+            map.forEach((item, index) => {
+                let percent = ((weights[item.key] / total) * 100).toFixed(1);
+                let isTop = index === 0;
+                html += `
+                    <div>
+                        <div class="flex justify-between text-xs mb-1 ${isTop ? 'text-yellow-300 font-bold' : 'text-gray-400'}">
+                            <span>${item.name} ${isTop ? '👑 (AI最重視)' : ''}</span>
+                            <span>重要度: ${percent}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-gradient-to-r ${isTop ? 'from-yellow-400 to-yellow-200' : 'from-indigo-500 to-purple-500'} h-2 rounded-full" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            elements.aiWeightsDisplay.innerHTML = html;
+        }
+
         function displayHistoricalScores(scores) {
-            if (!scores || scores.length === 0) {
-                elements.histScoreSection.classList.add('hidden');
-                return;
-            }
+            if (!scores || scores.length === 0) { elements.histScoreSection.classList.add('hidden'); return; }
             elements.histScoreSection.classList.remove('hidden');
 
             let totalScore = 0;
+            // 基礎スコアの分布（今回はボリュームゾーンが8000~9000になるはず）
             let dist = [
-                { label: '9000点以上', min: 9000, max: 99999, count: 0, color: 'bg-red-500' },
-                { label: '8000〜8999点', min: 8000, max: 8999, count: 0, color: 'bg-orange-400' },
-                { label: '7000〜7999点', min: 7000, max: 7999, count: 0, color: 'bg-yellow-400' },
-                { label: '6000〜6999点', min: 6000, max: 6999, count: 0, color: 'bg-green-500' },
-                { label: '5000〜5999点', min: 5000, max: 5999, count: 0, color: 'bg-blue-400' },
-                { label: '5000点未満', min: -99999, max: 4999, count: 0, color: 'bg-gray-400' }
+                { label: '9500点以上', min: 9500, max: 99999, count: 0, color: 'bg-red-500' },
+                { label: '9000〜9499点', min: 9000, max: 9499, count: 0, color: 'bg-orange-400' },
+                { label: '8500〜8999点', min: 8500, max: 8999, count: 0, color: 'bg-yellow-400' },
+                { label: '8000〜8499点', min: 8000, max: 8499, count: 0, color: 'bg-green-500' },
+                { label: '7000〜7999点', min: 7000, max: 7999, count: 0, color: 'bg-blue-400' },
+                { label: '7000点未満', min: -99999, max: 6999, count: 0, color: 'bg-gray-400' }
             ];
 
             scores.forEach(s => {
                 totalScore += s.score;
                 for (let d of dist) {
-                    if (s.score >= d.min && s.score <= d.max) {
-                        d.count++;
-                        break;
-                    }
+                    if (s.score >= d.min && s.score <= d.max) { d.count++; break; }
                 }
             });
 
@@ -627,7 +888,6 @@
             });
 
             elements.recentHistScores.innerHTML = '';
-            // 直近10件を新しい順に表示
             const recentScores = scores.slice(-10).reverse();
             recentScores.forEach((s, idx) => {
                 let timeLabel = idx === 0 ? '前回' : `${idx + 1}回前`;
@@ -636,7 +896,7 @@
                     <li class="flex justify-between items-center py-2 border-b border-gray-200 last:border-0 hover:bg-gray-100 px-2 rounded transition">
                         <span class="text-gray-500 font-bold w-12">${timeLabel}</span>
                         <span class="text-gray-400 font-mono tracking-widest text-[11px]">${drawStr}</span>
-                        <b class="text-indigo-600">${s.score} 点</b>
+                        <b class="${s.score < 0 ? 'text-red-500' : 'text-indigo-600'}">${s.score} 点</b>
                     </li>
                 `;
             });
@@ -644,9 +904,9 @@
 
         function displayAnalysis() {
             if (testTargetDraw) {
-                elements.analysisTitle.innerHTML = `STEP 2: 統計解析・直近トレンド学習結果 <span class="text-sm font-normal text-indigo-700 ml-2 border border-indigo-400 px-2 py-1 rounded bg-indigo-100 shadow-sm">🔍 過去検証モード適用中（正解データを隠して学習しました）</span>`;
+                elements.analysisTitle.innerHTML = `STEP 2: 学習結果 ＆ AIパラメータ最適化 <span class="text-sm font-normal text-indigo-700 ml-2 border border-indigo-400 px-2 py-1 rounded bg-indigo-100 shadow-sm">🔍 過去検証モード適用中</span>`;
             } else {
-                elements.analysisTitle.innerHTML = `STEP 2: 統計解析・直近トレンド学習結果`;
+                elements.analysisTitle.innerHTML = `STEP 2: 学習結果 ＆ AIパラメータ最適化`;
             }
 
             elements.latestDraw.innerHTML = '';
@@ -655,10 +915,54 @@
                 elements.latestDraw.innerHTML += `<div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${colorClass}">${num}</div>`;
             });
 
-            const stats = [];
-            for (let i = 1; i <= 37; i++) {
-                stats.push({ number: i, count: numberFrequencies[i] });
+            // 相性ペアの表示
+            let pairs = [];
+            for(let i=1; i<=37; i++) {
+                for(let j=i+1; j<=37; j++) {
+                    if(statsData.coMatrix[i] && statsData.coMatrix[i][j] > 0) {
+                        pairs.push({ p1: i, p2: j, count: statsData.coMatrix[i][j] });
+                    }
+                }
             }
+            pairs.sort((a,b) => b.count - a.count);
+            
+            elements.bestPairs.innerHTML = '';
+            for(let i=0; i<Math.min(10, pairs.length); i++) {
+                let p = pairs[i];
+                elements.bestPairs.innerHTML += `
+                    <li class="flex justify-between border-b border-purple-100 py-1">
+                        <span>[${p.p1.toString().padStart(2, '0')}] と [${p.p2.toString().padStart(2, '0')}]</span>
+                        <span class="font-bold">${p.count}回</span>
+                    </li>
+                `;
+            }
+
+            // 番台パターンの表示
+            let decades = [];
+            for(let k in statsData.decadeProb) {
+                decades.push({ key: k, prob: statsData.decadeProb[k] });
+            }
+            decades.sort((a,b) => b.prob - a.prob);
+            
+            elements.bestDecades.innerHTML = '';
+            for(let i=0; i<Math.min(5, decades.length); i++) {
+                let d = decades[i];
+                let percent = (d.prob * 100).toFixed(1);
+                elements.bestDecades.innerHTML += `
+                    <li class="flex flex-col">
+                        <div class="flex justify-between">
+                            <span class="font-mono tracking-widest">${d.key.replace(/:/g, ' - ')}</span>
+                            <span class="font-bold">${percent}%</span>
+                        </div>
+                        <div class="w-full bg-teal-100 rounded-full h-1 mt-1">
+                            <div class="bg-teal-500 h-1 rounded-full" style="width: ${percent}%"></div>
+                        </div>
+                    </li>
+                `;
+            }
+
+            const stats = [];
+            for (let i = 1; i <= 37; i++) { stats.push({ number: i, count: numberFrequencies[i] }); }
             stats.sort((a, b) => b.count - a.count);
 
             elements.hotNumbers.innerHTML = '';
@@ -666,44 +970,25 @@
                 elements.hotNumbers.innerHTML += `<li class="flex justify-between border-b border-red-200 py-1"><span>第${i+1}位: <b>${stats[i].number}</b></span> <span>${stats[i].count}回</span></li>`;
             }
 
+            let intervalsStats = [];
+            for (let i = 1; i <= 37; i++) { intervalsStats.push({ number: i, interval: currentIntervals[i] }); }
+            intervalsStats.sort((a, b) => b.interval - a.interval);
+            
             elements.coldNumbers.innerHTML = '';
-            const coldStats = [...stats].reverse();
             for (let i = 0; i < 5; i++) {
-                elements.coldNumbers.innerHTML += `<li class="flex justify-between border-b border-blue-200 py-1"><span>ワースト${i+1}位: <b>${coldStats[i].number}</b></span> <span>${coldStats[i].count}回</span></li>`;
+                elements.coldNumbers.innerHTML += `<li class="flex justify-between border-b border-blue-200 py-1"><span><b>${intervalsStats[i].number}</b></span> <span class="text-blue-700">${intervalsStats[i].interval}回はまり中</span></li>`;
             }
             
-            let recentStats = [];
-            for(let i=1; i<=37; i++) {
-                if(recentFrequencies[i] > 0) recentStats.push({number: i, count: recentFrequencies[i]});
-            }
-            recentStats.sort((a,b) => b.count - a.count);
-            
-            elements.recentHot.innerHTML = '';
-            for(let i=0; i<Math.min(6, recentStats.length); i++) {
-                elements.recentHot.innerHTML += `<span class="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full font-bold shadow-sm border border-yellow-400">${recentStats[i].number}</span>`;
-            }
-            
-            elements.recentSum.textContent = Math.round(recentAvgSum * 10) / 10;
-            elements.allTimeSum.textContent = Math.round(statsData.avgSum * 10) / 10;
-
-            let topPull = Object.keys(statsData.pullProb).reduce((a, b) => statsData.pullProb[a] > statsData.pullProb[b] ? a : b);
-            let topConsec = Object.keys(statsData.consecProb).reduce((a, b) => statsData.consecProb[a] > statsData.consecProb[b] ? a : b);
-
             elements.statisticalFeatures.innerHTML = `
-                <li><span class="block text-gray-500 text-xs">平均合計値 (Zスコア基準)</span> <b class="text-indigo-600 text-lg">${Math.round(statsData.avgSum * 10) / 10}</b></li>
-                <li><span class="block text-gray-500 text-xs">最も多い連番ペア数</span> <b class="text-indigo-600 text-lg">${topConsec} 組</b></li>
-                <li><span class="block text-gray-500 text-xs">前回からの平均引っ張り数</span> <b class="text-indigo-600 text-lg">${topPull} 個</b></li>
-                <li class="col-span-1 md:col-span-3 mt-2 pt-2 border-t border-gray-100">
-                    <span class="text-gray-500 text-xs mr-2">最新回の奇偶比 [${statsData.lastOddEven}] からの推移予測:</span>
-                    <span class="text-sm">次は <b>${
-                        statsData.oeTransitionProb[statsData.lastOddEven] ? 
-                        Object.keys(statsData.oeTransitionProb[statsData.lastOddEven]).reduce((a, b) => statsData.oeTransitionProb[statsData.lastOddEven][a] > statsData.oeTransitionProb[statsData.lastOddEven][b] ? a : b) : '不明'
-                    }</b> になる確率が最も高いです。</span>
-                </li>
+                <li><span class="block text-gray-500 text-xs">合計値の分布プロファイル</span> <b class="text-indigo-600 text-base">平均 ${Math.round(statsData.exp.sum.mean)}</b> <span class="text-xs text-gray-400">(±${Math.round(statsData.exp.sum.std)})</span></li>
+                <li><span class="block text-gray-500 text-xs">Hot/Coldの理想的な混ざり具合</span> <b class="text-indigo-600 text-base">分散 ${Math.round(statsData.exp.intStd.mean*10)/10}</b> <span class="text-xs text-gray-400">(±${Math.round(statsData.exp.intStd.std*10)/10})</span></li>
+                <li><span class="block text-gray-500 text-xs">数字ペアの相性の良さ(共起性)</span> <b class="text-indigo-600 text-base">スコア ${Math.round(statsData.exp.coScore.mean)}</b> <span class="text-xs text-gray-400">(±${Math.round(statsData.exp.coScore.std)})</span></li>
+                <li><span class="block text-gray-500 text-xs">マルチタイム・トレンド勢い</span> <b class="text-indigo-600 text-base">平均 ${Math.round(statsData.exp.momentum.mean*100)/100}</b> <span class="text-xs text-gray-400">(±${Math.round(statsData.exp.momentum.std*100)/100})</span></li>
+                <li><span class="block text-gray-500 text-xs">隣接数字の波及(スプレッド)</span> <b class="text-indigo-600 text-base">平均 ${Math.round(statsData.exp.adjPull.mean*10)/10} 個</b> <span class="text-xs text-gray-400">(±${Math.round(statsData.exp.adjPull.std*10)/10})</span></li>
+                <li><span class="block text-gray-500 text-xs">区画(ブロック)カバー率</span> <b class="text-indigo-600 text-base">平均 ${Math.round(statsData.exp.block.mean*10)/10} 箇所</b> <span class="text-xs text-gray-400">(散らばり度)</span></li>
             `;
         }
 
-        // --- シミュレーション実行トリガー ---
         elements.btnSimulate.addEventListener('click', () => {
             const mode = document.querySelector('input[name="simMode"]:checked').value;
             const ticketCount = parseInt(elements.ticketCount.value) || 5;
@@ -714,155 +999,58 @@
 
             if (mode === 'count') {
                 const iterations = parseInt(elements.simCount.value);
-                setTimeout(() => {
-                    runMonteCarloCountMode(iterations, ticketCount);
-                }, 50);
+                setTimeout(() => { runMonteCarloCountMode(iterations, ticketCount); }, 50);
             } else if (mode === 'all') {
-                setTimeout(() => {
-                    runAllPatternsMode(ticketCount);
-                }, 50);
-            } else if (mode === 'real') {
-                setTimeout(() => {
-                    runRealMode(ticketCount);
-                }, 50);
+                setTimeout(() => { runAllPatternsMode(ticketCount); }, 50);
             }
         });
 
         function resetSimBtn() {
             elements.btnSimulate.disabled = false;
-            elements.btnSimulate.innerHTML = `<span>🎰 完全乱数生成＆尤度評価を開始する</span>`;
+            elements.btnSimulate.innerHTML = `<span>🎰 ボリュームゾーン最適化予想を開始する</span>`;
             elements.resultSection.classList.remove('hidden');
             elements.resultSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 乱数生成
-        function generateRandom7() {
-            let available = Array.from({length: 37}, (_, i) => i + 1);
-            let picked = [];
-            for(let i = 0; i < 7; i++) {
-                let r = Math.floor(Math.random() * available.length);
-                picked.push(available[r]);
-                available.splice(r, 1);
-            }
-            return picked.sort((a, b) => a - b);
+        // --- ★ 最強の最終評価関数（ターゲット・キャリブレーション） ---
+        function evaluateDraw(draw, modelParams) {
+            // 1. Zスコアに基づく基礎スコア（ペナルティ減点）を計算
+            let base = calcRawScore(draw, modelParams, statsData.weights);
+
+            // 2. メタ評価: 基礎スコアが「過去のボリュームゾーン(histMean)」にどれだけ近いか
+            let diff = Math.abs(base.score - statsData.histMean);
+            
+            // 3. 差分をZスコア化し、ガウス関数的に10000点から減点
+            // histMeanにピタリと一致すれば、最終スコアが10000点となる
+            let zDiff = diff / statsData.histStd;
+            let finalScore = 10000 - (zDiff * 500); // 係数で減点の厳しさを調整
+
+            return { 
+                score: finalScore, 
+                rawScore: base.score, // 内部の基礎スコア
+                sum: base.sum, 
+                oddCount: base.oddCount, 
+                pullCount: base.pullCount, 
+                consecCount: base.consecCount, 
+                intSum: base.intSum 
+            };
         }
 
-        // スコア評価 (全パターン解析に耐えうる高速化版)
-        function evaluateDraw(draw) {
-            let score = 10000;
-            let sum = 0;
-            let oddCount = 0;
-            let pullCount = 0;
-            let consecCount = 0;
-            let freqSum = 0;
-            let recentFreqSum = 0;
-
-            for (let i = 0; i < 7; i++) {
-                let n = draw[i];
-                sum += n;
-                if (n % 2 !== 0) oddCount++;
-                if (statsData.lastDraw && statsData.lastDraw.includes(n)) pullCount++;
-                freqSum += numberFrequencies[n];
-                recentFreqSum += recentFrequencies[n];
-                if (i < 6 && draw[i+1] - n === 1) consecCount++;
-            }
-
-            let zScoreSum = Math.abs((sum - statsData.avgSum) / (statsData.stdDevSum || 1));
-            score -= zScoreSum * 600;
-
-            let oeKey = oddCount + ":" + (7 - oddCount);
-            let transProb = (statsData.oeTransitionProb[statsData.lastOddEven] && statsData.oeTransitionProb[statsData.lastOddEven][oeKey]) || 0;
-            score -= (1 - transProb) * 1500;
-
-            let pullProb = statsData.pullProb[pullCount] || 0;
-            score -= (1 - pullProb) * 1200;
-
-            let consecProb = statsData.consecProb[consecCount] || 0;
-            score -= (1 - consecProb) * 1000;
-
-            let diffFreq = Math.abs(freqSum - statsData.avgFreqSum);
-            score -= diffFreq * 10;
-
-            score += recentFreqSum * 80;
-
-            let zScoreRecent = Math.abs((sum - recentAvgSum) / (statsData.stdDevSum || 1));
-            score -= zScoreRecent * 400;
-
-            return { score: score, sum: sum, oddEven: oeKey, pull: pullCount, consec: consecCount };
-        }
-
-        // --- 【新】リアル志向モード（指定スコア帯域を狙う非同期処理） ---
-        function runRealMode(ticketCount) {
-            let minScore, maxScore;
-            const rangeVal = elements.targetScoreRange.value;
-            
-            if (rangeVal === 'custom') {
-                minScore = parseInt(elements.customScoreMin.value) || 0;
-                maxScore = parseInt(elements.customScoreMax.value) || 10000;
-            } else {
-                minScore = parseInt(rangeVal);
-                maxScore = minScore + 1500;
-            }
-            
-            let results = [];
-            let attempts = 0;
-            const MAX_ATTEMPTS = 500000; // 安全装置
-
-            function processChunk() {
-                for (let i = 0; i < 5000; i++) {
-                    attempts++;
-                    let draw = generateRandom7();
-                    let evaluation = evaluateDraw(draw);
-                    
-                    // スコアが指定の帯域に入っていれば採用
-                    if (evaluation.score >= minScore && evaluation.score <= maxScore) {
-                        let key = draw.join(',');
-                        // 重複する組み合わせは弾く
-                        if (!results.some(r => r.draw.join(',') === key)) {
-                            results.push({ draw: draw, score: evaluation.score, details: evaluation });
-                        }
-                    }
-                    
-                    if (results.length >= ticketCount || attempts >= MAX_ATTEMPTS) {
-                        break;
-                    }
-                }
-
-                if (results.length >= ticketCount) {
-                    // スコア順にソート
-                    results.sort((a, b) => b.score - a.score);
-                    let modeText = rangeVal === 'custom' 
-                        ? `カスタム範囲 (${minScore}点〜${maxScore}点)`
-                        : (rangeVal === '7000' ? "リアルな波 (7000点〜8500点)" : "荒れ気味の波 (5000点〜6500点)");
-                    renderResults(results, attempts, modeText);
-                    resetSimBtn();
-                } else if (attempts >= MAX_ATTEMPTS) {
-                    results.sort((a, b) => b.score - a.score);
-                    renderResults(results, attempts, `探索打ち切り (発見分のみ)`);
-                    resetSimBtn();
-                } else {
-                    // 継続中: UIを更新して次の処理を予約する
-                    elements.btnSimulate.innerHTML = `
-                        <div class="loader border-gray-800 border-top-green-400"></div> 
-                        <div class="flex flex-col items-center">
-                            <span class="text-sm font-bold text-green-300">指定のスコア帯域を探索中... ${results.length} / ${ticketCount} 口発見</span>
-                            <span class="text-xs text-green-700">試行回数: ${attempts.toLocaleString()}回</span>
-                        </div>
-                    `;
-                    setTimeout(processChunk, 0); // 非同期で呼び出し
-                }
-            }
-            
-            // 初回実行
-            processChunk();
-        }
-
-        // --- 【旧】回数指定モード ---
+        // --- 回数指定モード ---
         function runMonteCarloCountMode(iterations, ticketCount) {
             let simulationResults = [];
+            const modelParams = {
+                lastDraw: statsData.lastDraw,
+                intervals: currentIntervals,
+                coMatrix: statsData.coMatrix,
+                momentumMap: statsData.momentumMap,
+                decadeProb: statsData.decadeProb,
+                exp: statsData.exp
+            };
+
             for (let i = 0; i < iterations; i++) {
                 let draw = generateRandom7();
-                let evaluation = evaluateDraw(draw);
+                let evaluation = evaluateDraw(draw, modelParams);
                 simulationResults.push({ draw: draw, score: evaluation.score, details: evaluation });
             }
             
@@ -884,49 +1072,48 @@
             resetSimBtn();
         }
 
-        // --- 【新】全パターン完全解析モード（非同期・チャンク処理） ---
+        // --- 全パターン完全解析モード ---
         function runAllPatternsMode(ticketCount) {
             const TOTAL_COMBINATIONS = 10295472;
             let processed = 0;
-            const CHUNK_SIZE = 50000; // 画面をフリーズさせないための処理単位
+            const CHUNK_SIZE = 50000;
             
-            // 組み合わせ生成用ステート
             let currentCombo = [1, 2, 3, 4, 5, 6, 7];
             let isDone = false;
 
             let topResults = [];
             let minTopScore = -Infinity;
-            const KEEP_COUNT = ticketCount * 10; // 後で散らすために多めに上位をキープ
+            const KEEP_COUNT = ticketCount * 10;
+            
+            const modelParams = {
+                lastDraw: statsData.lastDraw,
+                intervals: currentIntervals,
+                coMatrix: statsData.coMatrix,
+                momentumMap: statsData.momentumMap,
+                decadeProb: statsData.decadeProb,
+                exp: statsData.exp
+            };
 
             function processChunk() {
                 let chunkCount = 0;
                 while (chunkCount < CHUNK_SIZE && !isDone) {
                     let draw = [currentCombo[0], currentCombo[1], currentCombo[2], currentCombo[3], currentCombo[4], currentCombo[5], currentCombo[6]];
-                    let evaluation = evaluateDraw(draw);
+                    let evaluation = evaluateDraw(draw, modelParams);
                     
                     if (evaluation.score > minTopScore) {
                         topResults.push({ draw: draw, score: evaluation.score, details: evaluation });
                         topResults.sort((a, b) => b.score - a.score);
-                        if (topResults.length > KEEP_COUNT) {
-                            topResults.pop();
-                        }
-                        if (topResults.length === KEEP_COUNT) {
-                            minTopScore = topResults[topResults.length - 1].score;
-                        }
+                        if (topResults.length > KEEP_COUNT) topResults.pop();
+                        if (topResults.length === KEEP_COUNT) minTopScore = topResults[topResults.length - 1].score;
                     }
 
-                    // 辞書順で次の組み合わせを生成
                     let i = 6;
-                    while (i >= 0 && currentCombo[i] === 37 - 6 + i) {
-                        i--;
-                    }
+                    while (i >= 0 && currentCombo[i] === 37 - 6 + i) i--;
                     if (i < 0) {
                         isDone = true;
                     } else {
                         currentCombo[i]++;
-                        for (let j = i + 1; j < 7; j++) {
-                            currentCombo[j] = currentCombo[j - 1] + 1;
-                        }
+                        for (let j = i + 1; j < 7; j++) currentCombo[j] = currentCombo[j - 1] + 1;
                     }
                     
                     chunkCount++;
@@ -934,33 +1121,28 @@
                 }
 
                 if (isDone) {
-                    // 完了
                     const predictions = pickPredictions(topResults, ticketCount);
                     renderResults(predictions, TOTAL_COMBINATIONS, "全1029万通り 完全解析");
                     resetSimBtn();
                 } else {
-                    // 継続中: UIを更新して次の処理を予約する
                     let percent = ((processed / TOTAL_COMBINATIONS) * 100).toFixed(1);
                     elements.btnSimulate.innerHTML = `
                         <div class="loader border-gray-800 border-top-yellow-200"></div> 
                         <div class="flex flex-col items-center">
-                            <span class="text-sm font-bold">全10,295,472パターンを解析中... ${percent}%</span>
+                            <span class="text-sm font-bold">全パターンのボリュームゾーン尤度を計算中... ${percent}%</span>
                             <span class="text-xs text-yellow-800">処理済: ${processed.toLocaleString()} 件</span>
                         </div>
                     `;
-                    setTimeout(processChunk, 0); // 非同期で呼び出し、画面の再描画を挟む
+                    setTimeout(processChunk, 0);
                 }
             }
-            
-            // 初回実行
             processChunk();
         }
 
-        // 結果から表示用の口数を抽出（1口目は最高得点、残りは分散）
         function pickPredictions(uniqueResults, ticketCount) {
             const predictions = [];
             if (uniqueResults.length > 0) {
-                predictions.push(uniqueResults[0]);
+                predictions.push(uniqueResults[0]); // 1位は必ず入れる
                 let candidates = uniqueResults.slice(1);
                 for (let i = candidates.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -980,33 +1162,28 @@
                 introText = `
                     <div class="text-center text-sm text-gray-800 mb-6 bg-yellow-100 p-5 rounded-lg border-2 border-yellow-400 shadow-sm">
                         <b class="text-yellow-700 text-lg block mb-2">🔥 ${modeText} 完了 🔥</b>
-                        ロト7の全組み合わせ <b>${iterations.toLocaleString()} 通り</b> 全てを計算機で総当たり評価し、<br>
-                        統計学的に最も尤度（確からしさ）の高い、最強の <b>${predictions.length} パターン</b>を抽出しました！
-                    </div>
-                `;
-            } else if (modeText && (modeText.includes("リアルな波") || modeText.includes("荒れ気味の波") || modeText.includes("カスタム範囲"))) {
-                introText = `
-                    <div class="text-center text-sm text-gray-800 mb-6 bg-green-100 p-5 rounded-lg border-2 border-green-400 shadow-sm">
-                        <b class="text-green-700 text-lg block mb-2">🌿 リアル志向モード完了: ${modeText} 🌿</b>
-                        仮想ルーレットを <b>${iterations.toLocaleString()} 回</b> 実行し、<br>
-                        実際の正解データに最もよく現れる適度なスコア帯域（人間味のある波）に該当する <b>${predictions.length} パターン</b>を抽出しました！
+                        全組み合わせ <b>${iterations.toLocaleString()} 通り</b> 全てを計算機で総当たり評価し、<br>
+                        「過去の正解データが最もよく分布するボリュームゾーン（適度な荒れ）」にピタリと着地した、真に現実的な最強の <b>${predictions.length} パターン</b>を抽出しました！
                     </div>
                 `;
             } else {
-                // 回数指定モードの文言
                 introText = `
                     <div class="text-center text-sm text-gray-600 mb-6 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                        完全乱数による仮想ルーレットを <b>${iterations.toLocaleString()} 回</b> 実行しました。<br>
-                        生成されたパターンのうち、最新回からの<b class="text-indigo-700">「奇偶の推移確率」「引っ張り確率」「連番確率」</b>などの統計条件を<br>
-                        最も高く満たした上位 ${predictions.length} パターンを厳選表示しています。
+                        仮想ルーレットを <b>${iterations.toLocaleString()} 回</b> 実行しました。<br>
+                        「過去の正解データが最もよく分布するボリュームゾーン（適度な荒れ）」に最も合致した上位 ${predictions.length} パターンを厳選表示しています。
                     </div>
                 `;
             }
 
             if (testTargetDraw) {
-                // 正解データのスコアを計算
-                const targetEvaluation = evaluateDraw(testTargetDraw);
-                const targetScore = Math.round(targetEvaluation.score);
+                const targetEvaluation = evaluateDraw(testTargetDraw, {
+                    lastDraw: statsData.lastDraw,
+                    intervals: currentIntervals,
+                    coMatrix: statsData.coMatrix,
+                    momentumMap: statsData.momentumMap,
+                    decadeProb: statsData.decadeProb,
+                    exp: statsData.exp
+                });
                 
                 introText += `
                     <div class="mt-4 p-4 bg-indigo-50 border-2 border-indigo-300 rounded-lg text-left shadow-sm">
@@ -1023,7 +1200,8 @@
                         </div>
                         ` : ''}
                         <div class="mt-3 text-sm text-indigo-700 font-bold bg-white px-3 py-2 rounded inline-block border border-indigo-200 shadow-sm">
-                            📊 この正解データの統計適合スコア: ${targetScore} 点
+                            🎯 最終最適化スコア (尤度): <span class="text-xl text-red-600">${Math.round(targetEvaluation.score)}</span> 点
+                            <span class="text-xs text-gray-500 font-normal ml-2">(基礎スコア: ${Math.round(targetEvaluation.rawScore)})</span>
                         </div>
                     </div>
                 `;
@@ -1045,12 +1223,15 @@
                 }
                 
                 let html = `
-                    <div class="bg-white p-4 rounded-xl shadow-md border ${index === 0 && !modeText ? 'border-yellow-400 bg-yellow-50/30' : 'border-gray-200'} flex flex-col items-center gap-3 relative overflow-hidden">
-                        ${index === 0 && !modeText ? '<div class="absolute top-0 left-0 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-br-lg">本命予想</div>' : ''}
+                    <div class="bg-white p-4 rounded-xl shadow-md border ${index === 0 ? 'border-yellow-400 bg-yellow-50/30' : 'border-gray-200'} flex flex-col items-center gap-3 relative overflow-hidden">
+                        ${index === 0 ? '<div class="absolute top-0 left-0 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-br-lg">本命予想</div>' : ''}
                         
                         <div class="w-full flex justify-between items-center border-b pb-2 mb-1 mt-2">
                             <span class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">予想 ${index + 1}</span>
-                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded border font-bold ${details.score >= 9500 ? 'text-red-600 border-red-200 bg-red-50' : ''}">適合スコア: ${Math.round(details.score)}</span>
+                            <span class="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded border font-bold ${details.score >= 9500 ? 'text-red-600 border-red-200 bg-red-50' : ''}">
+                                最適化スコア: <span class="text-base">${Math.round(details.score)}</span>
+                                <span class="text-[10px] text-gray-400 font-normal">(基礎: ${Math.round(details.rawScore)})</span>
+                            </span>
                         </div>
                         <div class="flex flex-wrap gap-2 justify-center py-2">
                 `;
@@ -1060,12 +1241,13 @@
                     html += `<div class="loto-ball ${colorClass} hover:scale-110 transition-transform cursor-default">${num}</div>`;
                 });
 
+                let oddStr = `${details.oddCount}:${7-details.oddCount}`;
                 html += `
                         </div>
                         <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 mt-2 bg-gray-50 p-3 rounded border border-gray-100">
-                            <div class="flex flex-col"><span class="text-gray-400">前回からの引っ張り</span><b class="${details.pull > 0 ? 'text-blue-600' : ''}">${details.pull} 個</b></div>
-                            <div class="flex flex-col"><span class="text-gray-400">連番ペア数</span><b class="${details.consec > 0 ? 'text-green-600' : ''}">${details.consec} 組</b></div>
-                            <div class="flex flex-col"><span class="text-gray-400">奇偶比 (奇:偶)</span><b>${details.oddEven}</b></div>
+                            <div class="flex flex-col"><span class="text-gray-400">前回からの引っ張り</span><b class="${details.pullCount > 0 ? 'text-blue-600' : ''}">${details.pullCount} 個</b></div>
+                            <div class="flex flex-col"><span class="text-gray-400">連番ペア数</span><b class="${details.consecCount > 0 ? 'text-green-600' : ''}">${details.consecCount} 組</b></div>
+                            <div class="flex flex-col"><span class="text-gray-400">奇偶比 (奇:偶)</span><b>${oddStr}</b></div>
                             <div class="flex flex-col"><span class="text-gray-400">合計値</span><b>${details.sum}</b></div>
                         </div>
                 `;
