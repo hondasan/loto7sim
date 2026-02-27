@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ロト7 予想シミュレーター</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* ロトのボール風デザイン */
+        .loto-ball {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: inset -2px -2px 6px rgba(0,0,0,0.3), 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        /* 番号帯ごとの色分け */
+        .ball-yellow { background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; text-shadow: none; }
+        .ball-blue { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+        .ball-red { background: linear-gradient(135deg, #f87171, #dc2626); }
+        .ball-green { background: linear-gradient(135deg, #34d399, #059669); }
+        
+        /* 処理中のスピナー */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- ヘッダー -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-700 p-6 text-white text-center">
+            <h1 class="text-3xl font-black mb-2 tracking-wider">🎯 ロト7 予想シミュレーター</h1>
+            <p class="text-sm opacity-90">マルコフ連鎖推移 ＆ 完全乱数尤度評価アルゴリズム</p>
+        </div>
+
+        <div class="p-6 md:p-8 space-y-8">
+            
+            <!-- STEP 1: データ準備 -->
+            <section class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                <h2 class="text-xl font-bold border-b-2 border-indigo-500 pb-2 mb-4">STEP 1: 過去データの準備</h2>
+                <p class="text-sm text-gray-600 mb-4">
+                    過去の当せん番号データをテキストエリアに貼り付けてください。<br>
+                    <span class="text-indigo-600 font-bold">（※一番下の行が「最新回」として認識され、直近のトレンドや引っ張り数字の計算に使用されます）</span>
+                </p>
+                <textarea id="csvData" rows="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm font-mono mb-2" placeholder="ここに表データやカンマ区切りのデータを貼り付けてください...&#10;&#10;例：&#10;第641回 1 3 7 23 24 33 36 17 30 J 5：2 127 6：3 174 詳細表示&#10;第642回 1 7 22 23 33 34 35 2 24 E 5：2 155 5：4 181 詳細表示"></textarea>
+                <div class="mb-4">
+                    <label class="inline-flex items-center text-sm text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="includeBonus" class="rounded text-indigo-600 focus:ring-indigo-500" checked>
+                        <span class="ml-2">ボーナス数字も全体出現頻度の集計に含める</span>
+                    </label>
+                </div>
+                <div class="mt-3 flex gap-4">
+                    <button id="btnMockData" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded transition">
+                        🧪 テスト用ダミーデータを生成
+                    </button>
+                    <button id="btnAnalyze" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow transition">
+                        📊 データを解析し直近トレンドを学習
+                    </button>
+                </div>
+            </section>
+
+            <!-- STEP 2: 分析結果 -->
+            <section id="analysisSection" class="hidden">
+                <h2 class="text-xl font-bold border-b-2 border-blue-500 pb-2 mb-4">STEP 2: 統計解析・直近トレンド学習結果</h2>
+                
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold text-indigo-800 mb-1">📌 直近（最新回）の当せん数字</h3>
+                        <p class="text-sm text-indigo-600">この数字からの「引っ張り」や「奇偶比の揺り戻し」を計算します。</p>
+                    </div>
+                    <div id="latestDraw" class="flex gap-1 font-bold text-lg"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                        <h3 class="font-bold text-red-700 mb-2">🔥 全期間 Hot Numbers</h3>
+                        <ul id="hotNumbers" class="space-y-1 text-sm"></ul>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <h3 class="font-bold text-blue-700 mb-2">❄️ 全期間 Cold Numbers</h3>
+                        <ul id="coldNumbers" class="space-y-1 text-sm"></ul>
+                    </div>
+                </div>
+
+                <!-- 直近のトレンド -->
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300 mb-6 shadow-sm">
+                    <h3 class="font-bold text-yellow-800 mb-2 border-b border-yellow-200 pb-1">📈 直近の流れ (ここ10回のトレンド)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-2">
+                        <div>
+                            <span class="text-gray-600 block mb-1">最近よく出ている数字:</span>
+                            <div id="recentHot" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div>
+                            <span class="text-gray-600 block mb-1">最近の平均合計値:</span>
+                            <b id="recentSum" class="text-xl text-yellow-700"></b> <span class="text-xs text-gray-500">(全期間平均: <span id="allTimeSum"></span>)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm text-sm text-gray-700">
+                    <h3 class="font-bold text-gray-800 mb-3 border-b pb-1">📊 ロト7の統計的特徴（尤度評価基準）</h3>
+                    <ul id="statisticalFeatures" class="grid grid-cols-1 md:grid-cols-3 gap-y-4 gap-x-6">
+                        <!-- JSで挿入 -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- STEP 3: シミュレーション -->
+            <section id="simulationSection" class="hidden bg-gray-800 text-white p-6 rounded-xl border border-gray-700 shadow-inner">
+                <h2 class="text-xl font-bold border-b-2 border-gray-500 pb-2 mb-4 text-yellow-400">STEP 3: 本格モンテカルロ・シミュレーション</h2>
+                
+                <div class="flex flex-col gap-5 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center gap-4">
+                        <label class="font-bold text-gray-200 shrink-0">シミュレーション方式:</label>
+                        <div class="flex flex-col md:flex-row gap-4 bg-gray-900 p-3 rounded-lg w-full">
+                            <label class="flex items-start gap-2 cursor-pointer group">
+                                <input type="radio" name="simMode" value="count" checked class="mt-1 text-yellow-500 focus:ring-yellow-500 w-4 h-4">
+                                <span class="text-sm group-hover:text-yellow-200 transition">回数指定モード<br><span class="text-xs text-gray-400">（指定した回数だけ回し、その中の上位を抽出）</span></span>
+                            </label>
+                            <label class="flex items-start gap-2 cursor-pointer group">
+                                <input type="radio" name="simMode" value="all" class="mt-1 text-yellow-500 focus:ring-yellow-500 w-4 h-4">
+                                <span class="text-sm text-yellow-300 font-bold group-hover:text-yellow-100 transition">全パターン完全解析モード (激選)<br><span class="text-xs text-yellow-600/70">（全10,295,472通りを総当たり計算し、最強の買い目を抽出）</span></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-6 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                        <!-- 回数指定用UI -->
+                        <div id="countModeUI" class="flex items-center gap-2">
+                            <label class="font-bold text-gray-200 text-sm shrink-0">仮想抽選回数:</label>
+                            <select id="simCount" class="p-2 border border-gray-600 rounded bg-gray-700 text-white text-sm">
+                                <option value="10000">10,000回</option>
+                                <option value="50000" selected>50,000回</option>
+                                <option value="100000">100,000回</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 全パターン指定用UI -->
+                        <div id="allModeUI" class="flex items-center gap-2 hidden">
+                            <span class="text-yellow-400 text-sm font-bold">※全10,295,472パターンを解析するため、完了まで数秒〜十数秒かかります。</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <label class="font-bold text-gray-200 text-sm shrink-0">予想抽出口数:</label>
+                            <select id="ticketCount" class="p-2 border border-gray-600 rounded bg-gray-700 text-white text-sm">
+                                <option value="1">1口</option>
+                                <option value="2">2口</option>
+                                <option value="3">3口</option>
+                                <option value="4">4口</option>
+                                <option value="5" selected>5口</option>
+                                <option value="6">6口</option>
+                                <option value="7">7口</option>
+                                <option value="8">8口</option>
+                                <option value="9">9口</option>
+                                <option value="10">10口</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button id="btnSimulate" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-black py-4 px-4 rounded-lg shadow-lg transition flex justify-center items-center gap-2 text-lg">
+                    <span>🎰 完全乱数生成＆尤度評価を開始する</span>
+                </button>
+            </section>
+
+            <!-- 結果表示 -->
+            <section id="resultSection" class="hidden">
+                <h2 class="text-2xl font-black text-center text-gray-800 mb-6 border-b-4 border-indigo-500 inline-block pb-2">✨ 統計適合度ランキング予想 ✨</h2>
+                <div id="predictionResults" class="space-y-4">
+                    <!-- JSで結果を挿入 -->
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let numberFrequencies = Array(38).fill(0); // インデックス1〜37を使用
+        let totalDraws = 0;
+        
+        // 直近トレンド用
+        let recentFrequencies = Array(38).fill(0);
+        let recentAvgSum = 0;
+        const RECENT_WINDOW = 10; 
+
+        // 統計データ
+        let statsData = {
+            avgSum: 0,
+            stdDevSum: 0,
+            avgFreqSum: 0,
+            lastDraw: [],        
+            lastOddEven: "",     
+            pullProb: {},        
+            consecProb: {},      
+            oeTransitionProb: {} 
+        };
+
+        // DOM要素
+        const elements = {
+            csvData: document.getElementById('csvData'),
+            includeBonus: document.getElementById('includeBonus'),
+            btnMockData: document.getElementById('btnMockData'),
+            btnAnalyze: document.getElementById('btnAnalyze'),
+            analysisSection: document.getElementById('analysisSection'),
+            hotNumbers: document.getElementById('hotNumbers'),
+            coldNumbers: document.getElementById('coldNumbers'),
+            recentHot: document.getElementById('recentHot'),
+            recentSum: document.getElementById('recentSum'),
+            allTimeSum: document.getElementById('allTimeSum'),
+            latestDraw: document.getElementById('latestDraw'),
+            simulationSection: document.getElementById('simulationSection'),
+            
+            // UI制御用
+            modeRadios: document.querySelectorAll('input[name="simMode"]'),
+            countModeUI: document.getElementById('countModeUI'),
+            allModeUI: document.getElementById('allModeUI'),
+            simCount: document.getElementById('simCount'),
+            ticketCount: document.getElementById('ticketCount'),
+            
+            btnSimulate: document.getElementById('btnSimulate'),
+            resultSection: document.getElementById('resultSection'),
+            predictionResults: document.getElementById('predictionResults'),
+            statisticalFeatures: document.getElementById('statisticalFeatures')
+        };
+
+        // UIイベント: モード切り替え
+        elements.modeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'count') {
+                    elements.countModeUI.classList.remove('hidden');
+                    elements.allModeUI.classList.add('hidden');
+                } else {
+                    elements.countModeUI.classList.add('hidden');
+                    elements.allModeUI.classList.remove('hidden');
+                }
+            });
+        });
+
+        function getBallColorClass(num) {
+            if (num >= 1 && num <= 9) return 'ball-yellow';
+            if (num >= 10 && num <= 19) return 'ball-blue';
+            if (num >= 20 && num <= 29) return 'ball-red';
+            if (num >= 30 && num <= 37) return 'ball-green';
+            return 'bg-gray-500';
+        }
+
+        function countConsecutives(nums) {
+            let count = 0;
+            for(let i = 0; i < nums.length - 1; i++) {
+                if(nums[i+1] - nums[i] === 1) count++;
+            }
+            return count;
+        }
+
+        function getOddEvenKey(nums) {
+            let odd = nums.filter(n => n % 2 !== 0).length;
+            return `${odd}:${7 - odd}`;
+        }
+
+        // ダミーデータ生成
+        elements.btnMockData.addEventListener('click', () => {
+            let csv = [];
+            for (let i = 1; i <= 300; i++) {
+                let available = Array.from({length: 37}, (_, i) => i + 1);
+                let mainDraw = [];
+                for (let j = 0; j < 7; j++) {
+                    let r = Math.floor(Math.random() * available.length);
+                    mainDraw.push(available[r]);
+                    available.splice(r, 1);
+                }
+                mainDraw.sort((a, b) => a - b);
+                
+                let bonusDraw = [];
+                for (let j = 0; j < 2; j++) {
+                    let r = Math.floor(Math.random() * available.length);
+                    bonusDraw.push(available[r]);
+                    available.splice(r, 1);
+                }
+                csv.push([...mainDraw, ...bonusDraw].join(','));
+            }
+            elements.csvData.value = csv.join('\n');
+            alert('300回分のダミーデータを生成しました！\n一番下の行が最新回として扱われます。');
+        });
+
+        // 解析処理
+        elements.btnAnalyze.addEventListener('click', () => {
+            const rawData = elements.csvData.value.trim();
+            const includeBonus = elements.includeBonus.checked;
+            
+            if (!rawData) {
+                alert('データが入力されていません。');
+                return;
+            }
+
+            numberFrequencies = Array(38).fill(0);
+            recentFrequencies = Array(38).fill(0);
+            totalDraws = 0;
+            recentAvgSum = 0;
+            
+            let sums = [];
+            let validDrawsHist = []; 
+            let pullCounts = {};
+            let consecCounts = {};
+            let transitionCounts = {};
+            let prevDraw = null;
+            let prevOddEven = null;
+
+            const lines = rawData.split('\n');
+            lines.forEach(line => {
+                const tokens = line.split(/[\s,]+/);
+                const numbers = tokens
+                    .filter(token => /^\d+$/.test(token))
+                    .map(n => parseInt(n, 10))
+                    .filter(n => n >= 1 && n <= 37);
+
+                if (numbers.length >= 7) {
+                    const maxLen = includeBonus ? Math.min(numbers.length, 9) : 7;
+                    for (let i = 0; i < maxLen; i++) {
+                        numberFrequencies[numbers[i]]++;
+                    }
+                    totalDraws++;
+                    
+                    let mainNums = numbers.slice(0, 7).sort((a, b) => a - b);
+                    validDrawsHist.push(mainNums);
+                    sums.push(mainNums.reduce((a, b) => a + b, 0));
+                    
+                    let consec = countConsecutives(mainNums);
+                    consecCounts[consec] = (consecCounts[consec] || 0) + 1;
+                    
+                    let oeKey = getOddEvenKey(mainNums);
+                    
+                    if (prevDraw !== null) {
+                        let pull = mainNums.filter(n => prevDraw.includes(n)).length;
+                        pullCounts[pull] = (pullCounts[pull] || 0) + 1;
+                        
+                        if (!transitionCounts[prevOddEven]) transitionCounts[prevOddEven] = {};
+                        transitionCounts[prevOddEven][oeKey] = (transitionCounts[prevOddEven][oeKey] || 0) + 1;
+                    }
+                    
+                    prevDraw = mainNums;
+                    prevOddEven = oeKey;
+                }
+            });
+
+            if (totalDraws < 2) {
+                alert('有効なデータが足りません。');
+                return;
+            }
+
+            let recentDraws = validDrawsHist.slice(-RECENT_WINDOW);
+            if (recentDraws.length > 0) {
+                let recentTotalSum = 0;
+                recentDraws.forEach(draw => {
+                    recentTotalSum += draw.reduce((a, b) => a + b, 0);
+                    draw.forEach(num => { recentFrequencies[num]++; });
+                });
+                recentAvgSum = recentTotalSum / recentDraws.length;
+            }
+
+            statsData.avgSum = sums.reduce((a, b) => a + b, 0) / sums.length;
+            statsData.stdDevSum = Math.sqrt(sums.reduce((a, b) => a + Math.pow(b - statsData.avgSum, 2), 0) / sums.length);
+            
+            let totalFreqSum = 0;
+            validDrawsHist.forEach(draw => {
+                totalFreqSum += draw.reduce((a, b) => a + numberFrequencies[b], 0);
+            });
+            statsData.avgFreqSum = totalFreqSum / validDrawsHist.length;
+
+            let totalTransitions = validDrawsHist.length - 1;
+            statsData.pullProb = {};
+            for(let k in pullCounts) statsData.pullProb[k] = pullCounts[k] / totalTransitions;
+            
+            statsData.consecProb = {};
+            for(let k in consecCounts) statsData.consecProb[k] = consecCounts[k] / validDrawsHist.length;
+            
+            statsData.oeTransitionProb = {};
+            for(let pk in transitionCounts) {
+                statsData.oeTransitionProb[pk] = {};
+                let sum = Object.values(transitionCounts[pk]).reduce((a,b)=>a+b, 0);
+                for(let ck in transitionCounts[pk]) {
+                    statsData.oeTransitionProb[pk][ck] = transitionCounts[pk][ck] / sum;
+                }
+            }
+
+            statsData.lastDraw = prevDraw;
+            statsData.lastOddEven = prevOddEven;
+
+            displayAnalysis();
+            elements.analysisSection.classList.remove('hidden');
+            elements.simulationSection.classList.remove('hidden');
+            elements.resultSection.classList.add('hidden');
+        });
+
+        function displayAnalysis() {
+            elements.latestDraw.innerHTML = '';
+            statsData.lastDraw.forEach(num => {
+                let colorClass = getBallColorClass(num);
+                elements.latestDraw.innerHTML += `<div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm ${colorClass}">${num}</div>`;
+            });
+
+            const stats = [];
+            for (let i = 1; i <= 37; i++) {
+                stats.push({ number: i, count: numberFrequencies[i] });
+            }
+            stats.sort((a, b) => b.count - a.count);
+
+            elements.hotNumbers.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                elements.hotNumbers.innerHTML += `<li class="flex justify-between border-b border-red-200 py-1"><span>第${i+1}位: <b>${stats[i].number}</b></span> <span>${stats[i].count}回</span></li>`;
+            }
+
+            elements.coldNumbers.innerHTML = '';
+            const coldStats = [...stats].reverse();
+            for (let i = 0; i < 5; i++) {
+                elements.coldNumbers.innerHTML += `<li class="flex justify-between border-b border-blue-200 py-1"><span>ワースト${i+1}位: <b>${coldStats[i].number}</b></span> <span>${coldStats[i].count}回</span></li>`;
+            }
+            
+            let recentStats = [];
+            for(let i=1; i<=37; i++) {
+                if(recentFrequencies[i] > 0) recentStats.push({number: i, count: recentFrequencies[i]});
+            }
+            recentStats.sort((a,b) => b.count - a.count);
+            
+            elements.recentHot.innerHTML = '';
+            for(let i=0; i<Math.min(6, recentStats.length); i++) {
+                elements.recentHot.innerHTML += `<span class="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full font-bold shadow-sm border border-yellow-400">${recentStats[i].number}</span>`;
+            }
+            
+            elements.recentSum.textContent = Math.round(recentAvgSum * 10) / 10;
+            elements.allTimeSum.textContent = Math.round(statsData.avgSum * 10) / 10;
+
+            let topPull = Object.keys(statsData.pullProb).reduce((a, b) => statsData.pullProb[a] > statsData.pullProb[b] ? a : b);
+            let topConsec = Object.keys(statsData.consecProb).reduce((a, b) => statsData.consecProb[a] > statsData.consecProb[b] ? a : b);
+
+            elements.statisticalFeatures.innerHTML = `
+                <li><span class="block text-gray-500 text-xs">平均合計値 (Zスコア基準)</span> <b class="text-indigo-600 text-lg">${Math.round(statsData.avgSum * 10) / 10}</b></li>
+                <li><span class="block text-gray-500 text-xs">最も多い連番ペア数</span> <b class="text-indigo-600 text-lg">${topConsec} 組</b></li>
+                <li><span class="block text-gray-500 text-xs">前回からの平均引っ張り数</span> <b class="text-indigo-600 text-lg">${topPull} 個</b></li>
+                <li class="col-span-1 md:col-span-3 mt-2 pt-2 border-t border-gray-100">
+                    <span class="text-gray-500 text-xs mr-2">最新回の奇偶比 [${statsData.lastOddEven}] からの推移予測:</span>
+                    <span class="text-sm">次は <b>${
+                        statsData.oeTransitionProb[statsData.lastOddEven] ? 
+                        Object.keys(statsData.oeTransitionProb[statsData.lastOddEven]).reduce((a, b) => statsData.oeTransitionProb[statsData.lastOddEven][a] > statsData.oeTransitionProb[statsData.lastOddEven][b] ? a : b) : '不明'
+                    }</b> になる確率が最も高いです。</span>
+                </li>
+            `;
+        }
+
+        // --- シミュレーション実行トリガー ---
+        elements.btnSimulate.addEventListener('click', () => {
+            const mode = document.querySelector('input[name="simMode"]:checked').value;
+            const ticketCount = parseInt(elements.ticketCount.value) || 5;
+            
+            elements.btnSimulate.disabled = true;
+            elements.btnSimulate.innerHTML = `<div class="loader border-gray-800 border-top-yellow-200"></div> <span>準備中...</span>`;
+            elements.resultSection.classList.add('hidden');
+
+            if (mode === 'count') {
+                const iterations = parseInt(elements.simCount.value);
+                setTimeout(() => {
+                    runMonteCarloCountMode(iterations, ticketCount);
+                }, 50);
+            } else {
+                setTimeout(() => {
+                    runAllPatternsMode(ticketCount);
+                }, 50);
+            }
+        });
+
+        function resetSimBtn() {
+            elements.btnSimulate.disabled = false;
+            elements.btnSimulate.innerHTML = `<span>🎰 完全乱数生成＆尤度評価を開始する</span>`;
+            elements.resultSection.classList.remove('hidden');
+            elements.resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 乱数生成
+        function generateRandom7() {
+            let available = Array.from({length: 37}, (_, i) => i + 1);
+            let picked = [];
+            for(let i = 0; i < 7; i++) {
+                let r = Math.floor(Math.random() * available.length);
+                picked.push(available[r]);
+                available.splice(r, 1);
+            }
+            return picked.sort((a, b) => a - b);
+        }
+
+        // スコア評価 (全パターン解析に耐えうる高速化版)
+        function evaluateDraw(draw) {
+            let score = 10000;
+            let sum = 0;
+            let oddCount = 0;
+            let pullCount = 0;
+            let consecCount = 0;
+            let freqSum = 0;
+            let recentFreqSum = 0;
+
+            for (let i = 0; i < 7; i++) {
+                let n = draw[i];
+                sum += n;
+                if (n % 2 !== 0) oddCount++;
+                if (statsData.lastDraw && statsData.lastDraw.includes(n)) pullCount++;
+                freqSum += numberFrequencies[n];
+                recentFreqSum += recentFrequencies[n];
+                if (i < 6 && draw[i+1] - n === 1) consecCount++;
+            }
+
+            let zScoreSum = Math.abs((sum - statsData.avgSum) / (statsData.stdDevSum || 1));
+            score -= zScoreSum * 600;
+
+            let oeKey = oddCount + ":" + (7 - oddCount);
+            let transProb = (statsData.oeTransitionProb[statsData.lastOddEven] && statsData.oeTransitionProb[statsData.lastOddEven][oeKey]) || 0;
+            score -= (1 - transProb) * 1500;
+
+            let pullProb = statsData.pullProb[pullCount] || 0;
+            score -= (1 - pullProb) * 1200;
+
+            let consecProb = statsData.consecProb[consecCount] || 0;
+            score -= (1 - consecProb) * 1000;
+
+            let diffFreq = Math.abs(freqSum - statsData.avgFreqSum);
+            score -= diffFreq * 10;
+
+            score += recentFreqSum * 80;
+
+            let zScoreRecent = Math.abs((sum - recentAvgSum) / (statsData.stdDevSum || 1));
+            score -= zScoreRecent * 400;
+
+            return { score: score, sum: sum, oddEven: oeKey, pull: pullCount, consec: consecCount };
+        }
+
+        // --- 【旧】回数指定モード ---
+        function runMonteCarloCountMode(iterations, ticketCount) {
+            let simulationResults = [];
+            for (let i = 0; i < iterations; i++) {
+                let draw = generateRandom7();
+                let evaluation = evaluateDraw(draw);
+                simulationResults.push({ draw: draw, score: evaluation.score, details: evaluation });
+            }
+            
+            simulationResults.sort((a, b) => b.score - a.score);
+
+            let uniqueResults = [];
+            let seen = new Set();
+            for (let item of simulationResults) {
+                let key = item.draw.join(',');
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueResults.push(item);
+                    if (uniqueResults.length >= ticketCount * 10) break;
+                }
+            }
+
+            const predictions = pickPredictions(uniqueResults, ticketCount);
+            renderResults(predictions, iterations, null);
+            resetSimBtn();
+        }
+
+        // --- 【新】全パターン完全解析モード（非同期・チャンク処理） ---
+        function runAllPatternsMode(ticketCount) {
+            const TOTAL_COMBINATIONS = 10295472;
+            let processed = 0;
+            const CHUNK_SIZE = 50000; // 画面をフリーズさせないための処理単位
+            
+            // 組み合わせ生成用ステート
+            let currentCombo = [1, 2, 3, 4, 5, 6, 7];
+            let isDone = false;
+
+            let topResults = [];
+            let minTopScore = -Infinity;
+            const KEEP_COUNT = ticketCount * 10; // 後で散らすために多めに上位をキープ
+
+            function processChunk() {
+                let chunkCount = 0;
+                while (chunkCount < CHUNK_SIZE && !isDone) {
+                    let draw = [currentCombo[0], currentCombo[1], currentCombo[2], currentCombo[3], currentCombo[4], currentCombo[5], currentCombo[6]];
+                    let evaluation = evaluateDraw(draw);
+                    
+                    if (evaluation.score > minTopScore) {
+                        topResults.push({ draw: draw, score: evaluation.score, details: evaluation });
+                        topResults.sort((a, b) => b.score - a.score);
+                        if (topResults.length > KEEP_COUNT) {
+                            topResults.pop();
+                        }
+                        if (topResults.length === KEEP_COUNT) {
+                            minTopScore = topResults[topResults.length - 1].score;
+                        }
+                    }
+
+                    // 辞書順で次の組み合わせを生成
+                    let i = 6;
+                    while (i >= 0 && currentCombo[i] === 37 - 6 + i) {
+                        i--;
+                    }
+                    if (i < 0) {
+                        isDone = true;
+                    } else {
+                        currentCombo[i]++;
+                        for (let j = i + 1; j < 7; j++) {
+                            currentCombo[j] = currentCombo[j - 1] + 1;
+                        }
+                    }
+                    
+                    chunkCount++;
+                    processed++;
+                }
+
+                if (isDone) {
+                    // 完了
+                    const predictions = pickPredictions(topResults, ticketCount);
+                    renderResults(predictions, TOTAL_COMBINATIONS, "全1029万通り 完全解析");
+                    resetSimBtn();
+                } else {
+                    // 継続中: UIを更新して次の処理を予約する
+                    let percent = ((processed / TOTAL_COMBINATIONS) * 100).toFixed(1);
+                    elements.btnSimulate.innerHTML = `
+                        <div class="loader border-gray-800 border-top-yellow-200"></div> 
+                        <div class="flex flex-col items-center">
+                            <span class="text-sm font-bold">全10,295,472パターンを解析中... ${percent}%</span>
+                            <span class="text-xs text-yellow-800">処理済: ${processed.toLocaleString()} 件</span>
+                        </div>
+                    `;
+                    setTimeout(processChunk, 0); // 非同期で呼び出し、画面の再描画を挟む
+                }
+            }
+            
+            // 初回実行
+            processChunk();
+        }
+
+        // 結果から表示用の口数を抽出（1口目は最高得点、残りは分散）
+        function pickPredictions(uniqueResults, ticketCount) {
+            const predictions = [];
+            if (uniqueResults.length > 0) {
+                predictions.push(uniqueResults[0]);
+                let candidates = uniqueResults.slice(1);
+                for (let i = candidates.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+                }
+                for (let i = 0; i < ticketCount - 1 && i < candidates.length; i++) {
+                    predictions.push(candidates[i]);
+                }
+            }
+            return predictions;
+        }
+
+        // 結果の描画
+        function renderResults(predictions, iterations, modeText) {
+            let introText = "";
+            if (modeText) {
+                // 目標スコアモードの文言
+                introText = `
+                    <div class="text-center text-sm text-gray-800 mb-6 bg-yellow-100 p-5 rounded-lg border-2 border-yellow-400 shadow-sm">
+                        <b class="text-yellow-700 text-lg block mb-2">🔥 ${modeText} 完了 🔥</b>
+                        ロト7の全組み合わせ <b>${iterations.toLocaleString()} 通り</b> 全てを計算機で総当たり評価し、<br>
+                        統計学的に最も尤度（確からしさ）の高い、最強の <b>${predictions.length} パターン</b>を抽出しました！
+                    </div>
+                `;
+            } else {
+                // 回数指定モードの文言
+                introText = `
+                    <div class="text-center text-sm text-gray-600 mb-6 bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                        完全乱数による仮想ルーレットを <b>${iterations.toLocaleString()} 回</b> 実行しました。<br>
+                        生成されたパターンのうち、最新回からの<b class="text-indigo-700">「奇偶の推移確率」「引っ張り確率」「連番確率」</b>などの統計条件を<br>
+                        最も高く満たした上位 ${predictions.length} パターンを厳選表示しています。
+                    </div>
+                `;
+            }
+
+            elements.predictionResults.innerHTML = introText;
+
+            predictions.forEach((item, index) => {
+                const draw = item.draw;
+                const details = item.details;
+                
+                let html = `
+                    <div class="bg-white p-4 rounded-xl shadow-md border ${index === 0 && !modeText ? 'border-yellow-400 bg-yellow-50/30' : 'border-gray-200'} flex flex-col items-center gap-3 relative overflow-hidden">
+                        ${index === 0 && !modeText ? '<div class="absolute top-0 left-0 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-br-lg">本命予想</div>' : ''}
+                        
+                        <div class="w-full flex justify-between items-center border-b pb-2 mb-1 mt-2">
+                            <span class="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm">予想 ${index + 1}</span>
+                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded border font-bold ${details.score >= 9500 ? 'text-red-600 border-red-200 bg-red-50' : ''}">適合スコア: ${Math.round(details.score)}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 justify-center py-2">
+                `;
+                
+                draw.forEach(num => {
+                    const colorClass = getBallColorClass(num);
+                    html += `<div class="loto-ball ${colorClass} hover:scale-110 transition-transform cursor-default">${num}</div>`;
+                });
+
+                html += `
+                        </div>
+                        <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 mt-2 bg-gray-50 p-3 rounded border border-gray-100">
+                            <div class="flex flex-col"><span class="text-gray-400">前回からの引っ張り</span><b class="${details.pull > 0 ? 'text-blue-600' : ''}">${details.pull} 個</b></div>
+                            <div class="flex flex-col"><span class="text-gray-400">連番ペア数</span><b class="${details.consec > 0 ? 'text-green-600' : ''}">${details.consec} 組</b></div>
+                            <div class="flex flex-col"><span class="text-gray-400">奇偶比 (奇:偶)</span><b>${details.oddEven}</b></div>
+                            <div class="flex flex-col"><span class="text-gray-400">合計値</span><b>${details.sum}</b></div>
+                        </div>
+                    </div>
+                `;
+                elements.predictionResults.innerHTML += html;
+            });
+        }
+    </script>
+</body>
+</html>
