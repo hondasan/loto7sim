@@ -51,7 +51,7 @@
 </head>
 <body class="text-gray-800 p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
         <!-- ヘッダー -->
         <div class="relative bg-gradient-to-r from-slate-800 to-indigo-900 p-6 text-white text-center">
             <h1 class="text-3xl font-black mb-2 tracking-wider mt-2">🎯 ロト7 予想シミュレーター Pro</h1>
@@ -114,8 +114,51 @@
                     <div id="latestDraw" class="flex gap-1 font-bold text-lg"></div>
                 </div>
 
-                <!-- マクロ・ミクロ分析UI -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- NEW: 1. 基礎統計ダッシュボード -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                    <h3 class="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2 text-sm flex items-center gap-2">📊 マクロ指標・基本統計（過去全データの平均的傾向）</h3>
+                    <p class="text-[10px] text-slate-500 mb-3">これらの平均値から大きく逸脱する組み合わせは、統計学的に発生しにくいとAIが判断（ペナルティ付与）します。</p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" id="macroStats">
+                        <!-- JSで挿入 -->
+                    </div>
+                </div>
+
+                <!-- NEW: 2. 特徴量・発生確率 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                    <h3 class="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2 text-sm flex items-center gap-2">🎲 特殊パターンの発生確率（予想への組み込み精査用）</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-sm" id="patternStats">
+                        <!-- JSで挿入 -->
+                    </div>
+                </div>
+
+                <!-- ミクロ分析UI（個別数字評価） Row 1 -->
+                <h3 class="font-bold text-slate-800 mb-3 mt-6 text-sm">🔢 個別数字のランキング分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <!-- 通算出現Top5 -->
+                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 shadow-sm">
+                        <h3 class="font-bold text-rose-800 mb-2 border-b border-rose-200 pb-1 text-sm">👑 通算出現回数 Top5</h3>
+                        <p class="text-[10px] text-rose-600 mb-2">全期間で最も選ばれている数字</p>
+                        <ul id="hotNumbers" class="space-y-2 text-sm text-rose-900 font-mono"></ul>
+                    </div>
+
+                    <!-- 直近の勢いTop5 -->
+                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm relative">
+                        <div class="absolute -top-3 -right-3 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">Hot!</div>
+                        <h3 class="font-bold text-orange-800 mb-2 border-b border-orange-200 pb-1 text-sm">📈 直近の勢い (モメンタム) Top5</h3>
+                        <p class="text-[10px] text-orange-600 mb-2">最近急激に出現率が上がっている数字</p>
+                        <ul id="momentumNumbers" class="space-y-2 text-sm text-orange-900 font-mono"></ul>
+                    </div>
+
+                    <!-- 通算出ないWorst5 -->
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-300 shadow-sm">
+                        <h3 class="font-bold text-slate-700 mb-2 border-b border-slate-300 pb-1 text-sm">💤 通算出現回数 Worst5</h3>
+                        <p class="text-[10px] text-slate-500 mb-2">全期間で最も選ばれていない数字</p>
+                        <ul id="worstNumbers" class="space-y-2 text-sm text-slate-800 font-mono"></ul>
+                    </div>
+                </div>
+
+                <!-- ミクロ分析UI（関係性評価） Row 2 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <!-- 相性ペア -->
                     <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 shadow-sm">
                         <h3 class="font-bold text-purple-800 mb-2 border-b border-purple-200 pb-1 text-sm">💞 最強の相性ペア (同時出現)</h3>
@@ -124,8 +167,7 @@
                     </div>
 
                     <!-- 遷移確率 -->
-                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm relative">
-                        <div class="absolute -top-3 -right-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">New</div>
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
                         <h3 class="font-bold text-amber-800 mb-2 border-b border-amber-200 pb-1 text-sm">➡️ 前回からの「流れ」 (推移確率)</h3>
                         <p class="text-[10px] text-amber-600 mb-2">前回の数字の<b>「直後」</b>に出た回数 Top5</p>
                         <ul id="bestTransitions" class="space-y-2 text-sm text-amber-900 font-mono"></ul>
@@ -144,7 +186,7 @@
                     <h3 class="font-bold text-indigo-300 mb-2 border-b border-slate-600 pb-2 flex items-center gap-2">
                         🤖 Fisher判別比に基づく特徴量ペナルティ最適化
                     </h3>
-                    <p class="text-xs text-slate-400 mb-4">「過去の正解データ」と「ランダムなハズレ」の分布差を計算し、尤度を最大化するための評価ウェイトを自動配分しました。</p>
+                    <p class="text-xs text-slate-400 mb-4">「過去の正解データ」と「ランダムなハズレ」の分布差を計算し、尤度を最大化するための評価ウェイトを自動配分しました。<br>上記の指標群のうち、どの要素を重視して予想アルゴリズムが動いているかを示します。</p>
                     <div id="aiWeightsDisplay" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
                         <!-- JSでバーを挿入 -->
                     </div>
@@ -244,11 +286,11 @@
             intervals: Array(38).fill(0),
             maxIntervals: Array(38).fill(0),
             intervalHistory: Array.from({length: 38}, () => []),
-            pastDrawsMasks: [], // ビットマスク化した過去の出目(超高速比較用)
+            pastDrawsMasks: [], 
             exp: {
                 sum: { mean: 130, std: 25 },
                 odd: { mean: 3.5, std: 1.2 },
-                highLow: { mean: 3.5, std: 1.2 }, // 新規: High(19-37)の数
+                highLow: { mean: 3.5, std: 1.2 }, 
                 consec: { mean: 0.8, std: 0.8 },
                 pull: { mean: 1.2, std: 1.0 },
                 intSum: { mean: 40, std: 15 },
@@ -260,9 +302,9 @@
                 adjPull: { mean: 1.5, std: 1.0 }, 
                 decade: { mean: 0.05, std: 0.02 },
                 block: { mean: 4.5, std: 0.8 },
-                digitDup: { mean: 1.5, std: 1.0 } // 新規: 同尾数(下1桁の重複度)
+                digitDup: { mean: 1.5, std: 1.0 } 
             },
-            // AI最適化される重み
+            features: { sums:[], odds:[], highLows:[], consecs:[], pulls:[], intSums:[], intStds:[], coScores:[], transScores:[], indvIntZs:[], momentums:[], decProbs:[], adjPulls:[], blockCovers:[], digitDups:[] },
             weights: { sum: 100, odd: 100, highLow: 100, consec: 100, pull: 100, int: 100, intStd: 100, coScore: 100, trans: 100, indvInt: 100, momentum: 100, adj: 100, dec: 100, block: 100, digitDup: 100 },
             histMean: 8500,
             histStd: 500
@@ -276,6 +318,11 @@
             analysisSection: document.getElementById('analysisSection'),
             analysisTitle: document.getElementById('analysisTitle'),
             latestDraw: document.getElementById('latestDraw'),
+            macroStats: document.getElementById('macroStats'), // NEW
+            patternStats: document.getElementById('patternStats'), // NEW
+            hotNumbers: document.getElementById('hotNumbers'), // NEW
+            momentumNumbers: document.getElementById('momentumNumbers'), // NEW
+            worstNumbers: document.getElementById('worstNumbers'), // NEW
             simulationSection: document.getElementById('simulationSection'),
             bestPairs: document.getElementById('bestPairs'),
             bestTransitions: document.getElementById('bestTransitions'),
@@ -373,11 +420,10 @@
             return picked.sort((a, b) => a - b);
         }
         
-        // BigIntの立っているビット数を数える(Brian Kernighanのアルゴリズムで超高速化)
         function countSetBits(n) {
             let count = 0;
             while (n > 0n) {
-                n &= (n - 1n); // 一番右にある立っているビットを消す
+                n &= (n - 1n);
                 count++;
             }
             return count;
@@ -408,21 +454,19 @@
             return null;
         }
 
-        // --- 二次関数ベースのペナルティ尤度計算 (正規分布の対数尤度近似) ---
+        // --- 二次関数ベースのペナルティ尤度計算 ---
         function getPenalty(z, weight) {
-            // Zスコア(標準偏差いくつ分離れているか)の2乗に重みを掛けることで、
-            // 外れ値に対して非線形に強いペナルティを与える
-            if (z <= 0.5) return 0; // 0.5σ以内は許容
+            if (z <= 0.5) return 0;
             return Math.pow(z - 0.5, 2) * weight; 
         }
 
-        // --- 特徴量抽出関数 (※全探索用に徹底的に高速化) ---
+        // --- 特徴量抽出関数 ---
         function extractFeatures(draw, model) {
             let sum = 0, oddCount = 0, pullCount = 0, consecCount = 0;
-            let highCount = 0; // 19以上の数
+            let highCount = 0; 
             let digitCounts = [0,0,0,0,0,0,0,0,0,0];
             let intervalsSum = 0, momentumSum = 0, coScore = 0, transScore = 0, indvIntZSum = 0;
-            let drawMask = 0n; // 過去一致判定用のビットマスク
+            let drawMask = 0n; 
 
             let pDraw = model.lastDraw || [];
             let tMat = model.transitionMatrix;
@@ -431,7 +475,6 @@
             let momMap = model.momentumMap;
             let intHist = model.intervalHistory;
 
-            // ネイティブループによる高速処理
             for (let i = 0; i < 7; i++) {
                 let n = draw[i];
                 sum += n;
@@ -439,7 +482,6 @@
                 if (n >= 19) highCount++;
                 digitCounts[n % 10]++;
                 
-                // 引っ張り
                 let isPull = false;
                 for(let k=0; k<pDraw.length; k++) if(pDraw[k] === n) { isPull = true; break; }
                 if(isPull) pullCount++;
@@ -455,7 +497,6 @@
                     for (let j = i + 1; j < 7; j++) coScore += cMat[n][draw[j]];
                 }
 
-                // 個別生存時間のZスコア和
                 if (intHist && intHist[n] && intHist[n].length > 0) {
                     let h = intHist[n];
                     let len = h.length;
@@ -465,26 +506,23 @@
                     indvIntZSum += Math.abs(iVal - m) / s;
                 }
                 
-                // マルコフ遷移スコア
                 if (pDraw.length > 0 && tMat) {
                     for(let k=0; k<pDraw.length; k++) transScore += tMat[pDraw[k]][n];
                 }
             }
 
-            // 同尾数(下1桁の重複度)
             let digitDup = 0;
             for(let i=0; i<10; i++) {
                 if(digitCounts[i] > 1) digitDup += (digitCounts[i] - 1);
             }
 
-            // 過去の当せん番号との最大一致数(5以上でハードペナルティ)
             let maxPastMatch = 0;
             if (model.pastDrawsMasks) {
                 let len = model.pastDrawsMasks.length;
                 for(let i=0; i<len; i++) {
                     let match = countSetBits(drawMask & model.pastDrawsMasks[i]);
                     if (match > maxPastMatch) maxPastMatch = match;
-                    if (maxPastMatch >= 5) break; // 5以上はあり得ないとみなして即打ち切り
+                    if (maxPastMatch >= 5) break; 
                 }
             }
             
@@ -501,7 +539,6 @@
             let p_dec = model.decadeProb ? (model.decadeProb[decKey] || 0) : 0;
             let blockCover = getBlockCover(draw);
 
-            // Zスコア化
             let e = model.exp;
             let z = (val, mean, std, minStd=0.5) => Math.abs(val - mean) / Math.max(std, minStd);
 
@@ -531,12 +568,10 @@
             let f = extractFeatures(draw, model);
             let score = 10000;
             
-            // 各特徴量のZスコアに応じたペナルティ減算
             for(let k of Object.keys(weights)) {
                 if(f[k] !== undefined) score -= getPenalty(f[k], weights[k]);
             }
             
-            // 過去に5個以上同じ数字が出た組み合わせは、現実的に極めて出現しにくいためハードペナルティ
             if (f.pastMatch >= 6) score -= 8000;
             else if (f.pastMatch === 5) score -= 4000;
             else if (f.pastMatch === 4) score -= 500;
@@ -544,7 +579,7 @@
             return { score: score, ...f.raw };
         }
 
-        // --- AI重み付け（Fisher判別比の拡張） ---
+        // --- AI重み付け（Fisher判別比） ---
         function trainWeights(validLines, tempModel) {
             let dummyData = [];
             for(let i=0; i<1500; i++) dummyData.push(generateRandom7());
@@ -573,7 +608,6 @@
                 let dVar = dFeats[k].reduce((a,b)=>a+Math.pow(b-dMean,2),0) / dFeats[k].length;
                 
                 let diff = Math.max(0.001, dMean - tMean); 
-                // 正解データの分散が小さい(=正解が狭い範囲に密集している)特徴量ほど信頼性が高い
                 let denom = Math.sqrt(tVar + dVar * 0.5) || 1; 
                 
                 scores[k] = Math.log1p(diff / denom);
@@ -583,7 +617,7 @@
             let bestWeights = {};
             keys.forEach(k => {
                 let ratio = totalScore > 0 ? (scores[k] / totalScore) : (1/keys.length);
-                bestWeights[k] = 20 + (ratio * 1200); // 尤度スケールの調整
+                bestWeights[k] = 20 + (ratio * 1200); 
             });
             return bestWeights;
         }
@@ -610,7 +644,6 @@
             lines.slice(-wShort).forEach(nums => nums.slice(0, 7).forEach(n => freqShort[n]++));
             lines.slice(-wMid).forEach(nums => nums.slice(0, 7).forEach(n => freqMid[n]++));
             
-            // 全体頻度・共起マトリクス・ビットマスクの構築
             lines.forEach(nums => {
                 let mainNums = nums.slice(0, 7);
                 let targetNums = includeBonus ? nums : mainNums;
@@ -633,14 +666,12 @@
             let decadeProb = {};
             for(let k in decadeCounts) decadeProb[k] = decadeCounts[k] / tDraws;
 
-            // モメンタムマップ
             let momentumMap = Array(38).fill(0);
             for(let i=1; i<=37; i++) {
                 let pShort = freqShort[i] / wShort, pMid = freqMid[i] / wMid, pAll = nFreq[i] / tDraws;
                 momentumMap[i] = (pShort - pMid) * 1.5 + (pMid - pAll);
             }
 
-            // 時系列に沿った特徴量の履歴抽出
             lines.forEach(nums => {
                 let mainNums = nums.slice(0, 7);
                 
@@ -708,13 +739,13 @@
             let exp = {};
             for(let key in fLists) {
                 let mean = calcMean(fLists[key]);
-                exp[key.replace(/s$/, '')] = { mean: mean, std: Math.max(calcStd(fLists[key], mean), 0.1) }; // 標準偏差0回避
+                exp[key.replace(/s$/, '')] = { mean: mean, std: Math.max(calcStd(fLists[key], mean), 0.1) }; 
             }
             exp.intSum = exp.intSum || exp.int; exp.intStd = exp.intStd || exp.int; exp.adjPull = exp.adjPull || exp.adj;
             exp.decade = exp.decProb || exp.dec; exp.transScore = exp.transScore || exp.tran; exp.indvIntZ = exp.indvIntZ || exp.indvInt;
             exp.block = exp.blockCover || exp.block; exp.highLow = exp.highLow || exp.high; exp.digitDup = exp.digitDup || exp.digit;
 
-            return { nFreq, tDraws, lastDraw: pDraw, coMatrix, transitionMatrix, momentumMap, decadeProb, intervals: tempIntervals, maxIntervals, intervalHistory, pastDrawsMasks, exp };
+            return { nFreq, tDraws, lastDraw: pDraw, coMatrix, transitionMatrix, momentumMap, decadeProb, intervals: tempIntervals, maxIntervals, intervalHistory, pastDrawsMasks, exp, features: fLists };
         }
 
         // --- メイン処理開始 ---
@@ -748,10 +779,9 @@
                 let optWeights = trainWeights(validLines, finalModel);
                 finalModel.weights = optWeights;
 
-                // ボリュームゾーンの分布スコアリング
                 let histScores = []; let tScore = 0;
                 if (validLines.length > 20) {
-                    for (let i = Math.max(20, validLines.length - 200); i < validLines.length; i++) { // 直近200回で分布を形成
+                    for (let i = Math.max(20, validLines.length - 200); i < validLines.length; i++) { 
                         let tempModel = calculateStatsModel(validLines.slice(0, i), includeBonus);
                         let eval = calcRawScore(validLines[i].slice(0,7).sort((a,b)=>a-b), tempModel, optWeights);
                         histScores.push({ index: i, score: eval.score });
@@ -782,6 +812,98 @@
             
             elements.latestDraw.innerHTML = '';
             statsData.lastDraw.forEach(n => elements.latestDraw.innerHTML += `<div class="ball-mini rounded-full flex items-center justify-center text-white shadow ${getBallColorClass(n)}">${n}</div>`);
+
+            // 1. 基礎統計ダッシュボード
+            const exp = statsData.exp;
+            elements.macroStats.innerHTML = `
+                <div class="bg-slate-50 p-3 rounded border border-slate-200 text-center">
+                    <div class="text-[10px] text-slate-500 mb-1">平均合計値</div>
+                    <div class="text-xl font-black text-slate-800">${exp.sum.mean.toFixed(1)}</div>
+                    <div class="text-[9px] text-slate-400">± ${exp.sum.std.toFixed(1)}</div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded border border-slate-200 text-center">
+                    <div class="text-[10px] text-slate-500 mb-1">奇数 : 偶数 比</div>
+                    <div class="text-xl font-black text-slate-800">${exp.odd.mean.toFixed(1)} <span class="text-sm text-slate-400 font-normal">:</span> ${(7 - exp.odd.mean).toFixed(1)}</div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded border border-slate-200 text-center">
+                    <div class="text-[10px] text-slate-500 mb-1">High(19~) : Low 比</div>
+                    <div class="text-xl font-black text-slate-800">${exp.highLow.mean.toFixed(1)} <span class="text-sm text-slate-400 font-normal">:</span> ${(7 - exp.highLow.mean).toFixed(1)}</div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded border border-slate-200 text-center">
+                    <div class="text-[10px] text-slate-500 mb-1">平均 連番発生数</div>
+                    <div class="text-xl font-black text-slate-800">${exp.consec.mean.toFixed(2)} <span class="text-xs font-normal text-slate-500">組</span></div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded border border-slate-200 text-center">
+                    <div class="text-[10px] text-slate-500 mb-1">平均 引っ張り数</div>
+                    <div class="text-xl font-black text-slate-800">${exp.pull.mean.toFixed(2)} <span class="text-xs font-normal text-slate-500">個</span></div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded border border-slate-200 text-center">
+                    <div class="text-[10px] text-slate-500 mb-1">平均 同尾数(下1桁同じ)</div>
+                    <div class="text-xl font-black text-slate-800">${exp.digitDup.mean.toFixed(2)} <span class="text-xs font-normal text-slate-500">組</span></div>
+                </div>
+            `;
+
+            // 2. 特殊パターンの発生確率
+            const f = statsData.features;
+            const tLen = f.sums.length || 1;
+            const prob = (arr, condition) => ((arr.filter(condition).length / tLen) * 100).toFixed(1);
+
+            elements.patternStats.innerHTML = `
+                <div class="flex justify-between items-center p-2 border-b border-slate-100">
+                    <span class="text-slate-600">連番が1組以上含まれる</span>
+                    <span class="font-bold text-indigo-600 text-lg">${prob(f.consecs, x => x > 0)}%</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border-b border-slate-100">
+                    <span class="text-slate-600">前回からの引っ張りが1個以上</span>
+                    <span class="font-bold text-indigo-600 text-lg">${prob(f.pulls, x => x > 0)}%</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border-b border-slate-100">
+                    <span class="text-slate-600">同尾数(下1桁同じ)が含まれる</span>
+                    <span class="font-bold text-indigo-600 text-lg">${prob(f.digitDups, x => x > 0)}%</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border-b border-slate-100">
+                    <span class="text-slate-600">奇数だけ、または偶数だけ</span>
+                    <span class="font-bold text-indigo-600 text-lg">${prob(f.odds, x => x === 0 || x === 7)}%</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border-b border-slate-100">
+                    <span class="text-slate-600">合計値が極端に低い (100未満)</span>
+                    <span class="font-bold text-indigo-600 text-lg">${prob(f.sums, x => x < 100)}%</span>
+                </div>
+                <div class="flex justify-between items-center p-2 border-b border-slate-100">
+                    <span class="text-slate-600">合計値が極端に高い (160以上)</span>
+                    <span class="font-bold text-indigo-600 text-lg">${prob(f.sums, x => x >= 160)}%</span>
+                </div>
+            `;
+
+            // 3. 数字ランキング系
+            let freqArr = [];
+            for(let i=1; i<=37; i++) freqArr.push({n: i, c: statsData.nFreq[i]});
+            freqArr.sort((a,b)=>b.c - a.c);
+            
+            elements.hotNumbers.innerHTML = freqArr.slice(0,5).map(item => `
+                <li class="flex justify-between items-center bg-white p-2 rounded border border-rose-100">
+                    <div class="ball-mini rounded-full flex items-center justify-center text-white ${getBallColorClass(item.n)}">${item.n}</div>
+                    <span class="font-bold text-rose-700">${item.c}回</span>
+                </li>
+            `).join('');
+
+            let worstArr = [...freqArr].sort((a,b)=>a.c - b.c);
+            elements.worstNumbers.innerHTML = worstArr.slice(0,5).map(item => `
+                <li class="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                    <div class="ball-mini rounded-full flex items-center justify-center text-white ${getBallColorClass(item.n)}">${item.n}</div>
+                    <span class="font-bold text-slate-600">${item.c}回</span>
+                </li>
+            `).join('');
+
+            let momArr = [];
+            for(let i=1; i<=37; i++) momArr.push({n: i, m: statsData.momentumMap[i]});
+            momArr.sort((a,b)=>b.m - a.m);
+            elements.momentumNumbers.innerHTML = momArr.slice(0,5).map(item => `
+                <li class="flex justify-between items-center bg-white p-2 rounded border border-orange-100">
+                    <div class="ball-mini rounded-full flex items-center justify-center text-white ${getBallColorClass(item.n)}">${item.n}</div>
+                    <span class="font-bold text-orange-600">${item.m > 0 ? '+'+item.m.toFixed(3) : item.m.toFixed(3)}</span>
+                </li>
+            `).join('');
 
             // 相性ペア
             let pairs = [];
@@ -877,9 +999,8 @@
             let base = calcRawScore(draw, statsData, statsData.weights);
             let diff = Math.abs(base.score - statsData.histMean);
             let zDiff = diff / Math.max(statsData.histStd, 50);
-            let finalScore = 10000 - (zDiff * 250); // 平均からの乖離ペナルティ
+            let finalScore = 10000 - (zDiff * 250); 
             
-            // 尤度としての正規化(マイナスにしない)
             if (finalScore < 0) finalScore = 0;
             return { score: finalScore, rawScore: base.score, sum: base.sum, oddCount: base.oddCount, pullCount: base.pullCount, consecCount: base.consecCount, transScore: base.transScore };
         }
@@ -912,12 +1033,9 @@
             let processed = 0, topRes = [], minScore = -Infinity, combo = [1,2,3,4,5,6,7], isDone = false;
             
             function chunk() {
-                // UIのフリーズを防ぐため、1回の処理時間を約15ms（60fpsの1フレーム相当）に制限するタイムスライス
                 const startTime = performance.now();
                 
                 while (!isDone && (performance.now() - startTime < 15)) {
-                    // performance.now() の呼び出し自体も少し重いため、
-                    // 内側のループで数千件まとめて処理してから時間チェックを行う
                     let cCount = 0;
                     while (cCount < 2000 && !isDone) {
                         let d = [combo[0], combo[1], combo[2], combo[3], combo[4], combo[5], combo[6]];
@@ -926,11 +1044,10 @@
                         if (e.score > minScore) {
                             topRes.push({d:d, e:e}); 
                             topRes.sort((a,b)=>b.e.score - a.e.score);
-                            if (topRes.length > tCount*3) topRes.pop(); // 候補プールの維持
+                            if (topRes.length > tCount*3) topRes.pop(); 
                             if (topRes.length === tCount*3) minScore = topRes[topRes.length-1].e.score;
                         }
                         
-                        // 次の組み合わせを生成 (辞書式順序)
                         let i = 6;
                         while (i >= 0 && combo[i] === 37 - 6 + i) i--;
                         if (i < 0) isDone = true;
@@ -953,12 +1070,10 @@
                             <div class="w-32 bg-indigo-900 rounded-full h-1 mt-1"><div class="bg-white h-1 rounded-full" style="width:${pct}%"></div></div>
                         </div>`;
                     
-                    // ブラウザの描画タイミングに合わせて次の処理（チャンク）を呼び出す
                     requestAnimationFrame(chunk);
                 }
             }
             
-            // 初回実行
             requestAnimationFrame(chunk);
         }
 
@@ -971,7 +1086,6 @@
             
             let preds = [unique[0]]; 
             let cands = unique.slice(1);
-            // 本命以外はトップ層からランダムに抽出(多様性の確保)
             for (let i=cands.length-1; i>0; i--) { let j=Math.floor(Math.random()*(i+1)); [cands[i],cands[j]] = [cands[j],cands[i]]; }
             for (let i=0; i<tCount-1 && i<cands.length; i++) preds.push(cands[i]);
 
