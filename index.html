@@ -114,7 +114,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4" id="macroStats">
                         <!-- JSで挿入 -->
                     </div>
-                    <!-- NEW: 番台（ブロック）のシェア -->
+                    <!-- 番台（ブロック）のシェア -->
                     <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mt-2">
                         <h4 class="text-xs font-bold text-slate-600 mb-2">🚥 番台（ブロック）ごとの全体出現シェア</h4>
                         <div id="blockShareStats" class="space-y-1">
@@ -142,7 +142,7 @@
                         <ul id="hotNumbers" class="space-y-2 text-sm text-rose-900 font-mono"></ul>
                     </div>
 
-                    <!-- NEW: ボーナス出現Top5 -->
+                    <!-- ボーナス出現Top5 -->
                     <div class="bg-pink-50 p-4 rounded-xl border border-pink-200 shadow-sm">
                         <h3 class="font-bold text-pink-800 mb-2 border-b border-pink-200 pb-1 text-sm flex justify-between"><span>🎁 ボーナス頻出</span></h3>
                         <p class="text-[10px] text-pink-600 mb-2">ボーナス数字として選ばれている</p>
@@ -164,7 +164,7 @@
                         <ul id="momentumNumbers" class="space-y-2 text-sm text-orange-900 font-mono"></ul>
                     </div>
 
-                    <!-- NEW: 直近の冷え込みWorst5 -->
+                    <!-- 直近の冷え込みWorst5 -->
                     <div class="bg-cyan-50 p-4 rounded-xl border border-cyan-200 shadow-sm relative">
                         <div class="absolute -top-3 -right-3 bg-cyan-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">Cold</div>
                         <h3 class="font-bold text-cyan-800 mb-2 border-b border-cyan-200 pb-1 text-sm flex justify-between"><span>📉 勢い急降下 (逆張り)</span></h3>
@@ -176,7 +176,7 @@
                 <!-- ミクロ分析UI（関係性評価） Row 2 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     
-                    <!-- NEW: 引っ張りやすい Top5 -->
+                    <!-- 引っ張りやすい Top5 -->
                     <div class="bg-teal-50 p-4 rounded-xl border border-teal-200 shadow-sm">
                         <h3 class="font-bold text-teal-800 mb-2 border-b border-teal-200 pb-1 text-sm flex justify-between"><span>🧲 引っ張りやすい</span></h3>
                         <p class="text-[10px] text-teal-600 mb-2">「前回出た数字」が次回も出る回数</p>
@@ -202,6 +202,29 @@
                         <h3 class="font-bold text-blue-800 mb-2 border-b border-blue-200 pb-1 text-sm flex justify-between"><span>❄️ スランプ限界</span></h3>
                         <p class="text-[10px] text-blue-600 mb-2">現在のハマり回数 / 過去最大</p>
                         <ul id="coldNumbers" class="space-y-2 text-sm"></ul>
+                    </div>
+                </div>
+
+                <!-- NEW: 全37数字 詳細データ一覧 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                    <h3 class="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2 text-sm flex items-center gap-2">📋 全37数字 詳細アナリティクス一覧</h3>
+                    <p class="text-[10px] text-slate-500 mb-2">各数字の全体を通したパフォーマンスと現在の状態（ハマり・勢い）を一覧で確認できます。表はスクロール可能です。</p>
+                    <div class="overflow-x-auto max-h-80 overflow-y-auto border border-slate-200 rounded-lg">
+                        <table class="w-full text-sm text-left text-slate-600">
+                            <thead class="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-center w-16">数字</th>
+                                    <th scope="col" class="px-4 py-3 text-right">通算出現回数</th>
+                                    <th scope="col" class="px-4 py-3 text-right">出現率</th>
+                                    <th scope="col" class="px-4 py-3 text-right">現在ハマり</th>
+                                    <th scope="col" class="px-4 py-3 text-right">最大ハマり</th>
+                                    <th scope="col" class="px-4 py-3 text-right">直近の勢い</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allNumbersTable">
+                                <!-- JSで挿入 -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -343,14 +366,15 @@
             analysisTitle: document.getElementById('analysisTitle'),
             latestDraw: document.getElementById('latestDraw'),
             macroStats: document.getElementById('macroStats'),
-            blockShareStats: document.getElementById('blockShareStats'), // NEW
+            blockShareStats: document.getElementById('blockShareStats'), 
             patternStats: document.getElementById('patternStats'),
             hotNumbers: document.getElementById('hotNumbers'),
-            bonusNumbers: document.getElementById('bonusNumbers'), // NEW
+            bonusNumbers: document.getElementById('bonusNumbers'), 
             momentumNumbers: document.getElementById('momentumNumbers'),
             worstNumbers: document.getElementById('worstNumbers'),
-            coldMomentumNumbers: document.getElementById('coldMomentumNumbers'), // NEW
-            pullNumbers: document.getElementById('pullNumbers'), // NEW
+            coldMomentumNumbers: document.getElementById('coldMomentumNumbers'), 
+            pullNumbers: document.getElementById('pullNumbers'), 
+            allNumbersTable: document.getElementById('allNumbersTable'), // NEW
             simulationSection: document.getElementById('simulationSection'),
             bestPairs: document.getElementById('bestPairs'),
             bestTransitions: document.getElementById('bestTransitions'),
@@ -1046,6 +1070,29 @@
                     <div class="text-[9px] text-right text-slate-400 mt-0.5">過去最大: ${i.max}回</div>
                 </li>
             `}).join('');
+
+            // 全37数字 詳細データ一覧の生成
+            let tableHtml = '';
+            for (let i = 1; i <= 37; i++) {
+                let count = statsData.mainFreq[i];
+                let rate = statsData.tDraws > 0 ? ((count / statsData.tDraws) * 100).toFixed(1) : 0;
+                let currentInt = statsData.intervals[i];
+                let maxInt = statsData.maxIntervals[i];
+                let mom = statsData.momentumMap[i] || 0;
+                let momStr = mom > 0 ? `<span class="text-orange-500 font-bold">+${mom.toFixed(3)}</span>` : `<span class="text-cyan-600">${mom.toFixed(3)}</span>`;
+                
+                tableHtml += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td class="px-4 py-2 font-bold"><div class="ball-mini rounded-full flex items-center justify-center text-white mx-auto ${getBallColorClass(i)}">${i}</div></td>
+                        <td class="px-4 py-2 text-right font-mono text-slate-700">${count}回</td>
+                        <td class="px-4 py-2 text-right font-mono text-slate-500">${rate}%</td>
+                        <td class="px-4 py-2 text-right font-mono ${currentInt > 10 ? 'text-red-500 font-bold' : 'text-slate-700'}">${currentInt}回</td>
+                        <td class="px-4 py-2 text-right font-mono text-slate-500">${maxInt}回</td>
+                        <td class="px-4 py-2 text-right font-mono">${momStr}</td>
+                    </tr>
+                `;
+            }
+            elements.allNumbersTable.innerHTML = tableHtml;
 
             // AI重み表示
             let map = [
