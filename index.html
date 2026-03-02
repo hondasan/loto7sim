@@ -114,16 +114,23 @@
                     <div id="latestDraw" class="flex gap-1 font-bold text-lg"></div>
                 </div>
 
-                <!-- NEW: 1. 基礎統計ダッシュボード -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                <!-- 1. 基礎統計ダッシュボード -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6 relative">
                     <h3 class="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2 text-sm flex items-center gap-2">📊 マクロ指標・基本統計（過去全データの平均的傾向）</h3>
                     <p class="text-[10px] text-slate-500 mb-3">これらの平均値から大きく逸脱する組み合わせは、統計学的に発生しにくいとAIが判断（ペナルティ付与）します。</p>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" id="macroStats">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4" id="macroStats">
                         <!-- JSで挿入 -->
+                    </div>
+                    <!-- NEW: 番台（ブロック）のシェア -->
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mt-2">
+                        <h4 class="text-xs font-bold text-slate-600 mb-2">🚥 番台（ブロック）ごとの全体出現シェア</h4>
+                        <div id="blockShareStats" class="space-y-1">
+                            <!-- JSで挿入 -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- NEW: 2. 特徴量・発生確率 -->
+                <!-- 2. 特徴量・発生確率 -->
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
                     <h3 class="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2 text-sm flex items-center gap-2">🎲 特殊パターンの発生確率（予想への組み込み精査用）</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-sm" id="patternStats">
@@ -131,52 +138,69 @@
                     </div>
                 </div>
 
-                <!-- ミクロ分析UI（個別数字評価） Row 1 -->
-                <h3 class="font-bold text-slate-800 mb-3 mt-6 text-sm">🔢 個別数字のランキング分析</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <h3 class="font-bold text-slate-800 mb-3 mt-6 text-sm">🔢 ミクロ分析・個別数字と関係性のランキング</h3>
+                
+                <!-- ミクロ分析UI（単一数字の評価） Row 1 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                     <!-- 通算出現Top5 -->
                     <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 shadow-sm">
-                        <h3 class="font-bold text-rose-800 mb-2 border-b border-rose-200 pb-1 text-sm">👑 通算出現回数 Top5</h3>
-                        <p class="text-[10px] text-rose-600 mb-2">全期間で最も選ばれている数字</p>
+                        <h3 class="font-bold text-rose-800 mb-2 border-b border-rose-200 pb-1 text-sm flex justify-between"><span>👑 通算出やすい</span></h3>
+                        <p class="text-[10px] text-rose-600 mb-2">全期間で最も選ばれている</p>
                         <ul id="hotNumbers" class="space-y-2 text-sm text-rose-900 font-mono"></ul>
+                    </div>
+
+                    <!-- 通算出ないWorst5 -->
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-300 shadow-sm">
+                        <h3 class="font-bold text-slate-700 mb-2 border-b border-slate-300 pb-1 text-sm flex justify-between"><span>💤 通算出にくい</span></h3>
+                        <p class="text-[10px] text-slate-500 mb-2">全期間で最も選ばれていない</p>
+                        <ul id="worstNumbers" class="space-y-2 text-sm text-slate-800 font-mono"></ul>
                     </div>
 
                     <!-- 直近の勢いTop5 -->
                     <div class="bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm relative">
                         <div class="absolute -top-3 -right-3 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">Hot!</div>
-                        <h3 class="font-bold text-orange-800 mb-2 border-b border-orange-200 pb-1 text-sm">📈 直近の勢い (モメンタム) Top5</h3>
-                        <p class="text-[10px] text-orange-600 mb-2">最近急激に出現率が上がっている数字</p>
+                        <h3 class="font-bold text-orange-800 mb-2 border-b border-orange-200 pb-1 text-sm flex justify-between"><span>📈 勢い急上昇</span></h3>
+                        <p class="text-[10px] text-orange-600 mb-2">最近急激に出現率が上がっている</p>
                         <ul id="momentumNumbers" class="space-y-2 text-sm text-orange-900 font-mono"></ul>
                     </div>
 
-                    <!-- 通算出ないWorst5 -->
-                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-300 shadow-sm">
-                        <h3 class="font-bold text-slate-700 mb-2 border-b border-slate-300 pb-1 text-sm">💤 通算出現回数 Worst5</h3>
-                        <p class="text-[10px] text-slate-500 mb-2">全期間で最も選ばれていない数字</p>
-                        <ul id="worstNumbers" class="space-y-2 text-sm text-slate-800 font-mono"></ul>
+                    <!-- NEW: 直近の冷え込みWorst5 -->
+                    <div class="bg-cyan-50 p-4 rounded-xl border border-cyan-200 shadow-sm relative">
+                        <div class="absolute -top-3 -right-3 bg-cyan-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">Cold</div>
+                        <h3 class="font-bold text-cyan-800 mb-2 border-b border-cyan-200 pb-1 text-sm flex justify-between"><span>📉 勢い急降下 (逆張り)</span></h3>
+                        <p class="text-[10px] text-cyan-600 mb-2">最近急激に顔を出さなくなった</p>
+                        <ul id="coldMomentumNumbers" class="space-y-2 text-sm text-cyan-900 font-mono"></ul>
                     </div>
                 </div>
 
                 <!-- ミクロ分析UI（関係性評価） Row 2 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    
+                    <!-- NEW: 引っ張りやすい Top5 -->
+                    <div class="bg-teal-50 p-4 rounded-xl border border-teal-200 shadow-sm">
+                        <h3 class="font-bold text-teal-800 mb-2 border-b border-teal-200 pb-1 text-sm flex justify-between"><span>🧲 引っ張りやすい</span></h3>
+                        <p class="text-[10px] text-teal-600 mb-2">「前回出た数字」が次回も出る回数</p>
+                        <ul id="pullNumbers" class="space-y-2 text-sm text-teal-900 font-mono"></ul>
+                    </div>
+
                     <!-- 相性ペア -->
                     <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 shadow-sm">
-                        <h3 class="font-bold text-purple-800 mb-2 border-b border-purple-200 pb-1 text-sm">💞 最強の相性ペア (同時出現)</h3>
-                        <p class="text-[10px] text-purple-600 mb-2">同じ回に一緒に選ばれた回数 Top5</p>
+                        <h3 class="font-bold text-purple-800 mb-2 border-b border-purple-200 pb-1 text-sm flex justify-between"><span>💞 最強の相性ペア</span></h3>
+                        <p class="text-[10px] text-purple-600 mb-2">一緒に選ばれた回数 (同時出現)</p>
                         <ul id="bestPairs" class="space-y-2 text-sm text-purple-900 font-mono"></ul>
                     </div>
 
                     <!-- 遷移確率 -->
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 shadow-sm">
-                        <h3 class="font-bold text-amber-800 mb-2 border-b border-amber-200 pb-1 text-sm">➡️ 前回からの「流れ」 (推移確率)</h3>
-                        <p class="text-[10px] text-amber-600 mb-2">前回の数字の<b>「直後」</b>に出た回数 Top5</p>
+                        <h3 class="font-bold text-amber-800 mb-2 border-b border-amber-200 pb-1 text-sm flex justify-between"><span>➡️ 前回からの流れ</span></h3>
+                        <p class="text-[10px] text-amber-600 mb-2">前回の数字の<b>直後</b>に出た回数</p>
                         <ul id="bestTransitions" class="space-y-2 text-sm text-amber-900 font-mono"></ul>
                     </div>
 
                     <!-- スランプ・最大ハマり -->
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm">
-                        <h3 class="font-bold text-blue-800 mb-2 border-b border-blue-200 pb-1 text-sm">❄️ スランプ限界数字 (生存時間)</h3>
-                        <p class="text-[10px] text-blue-600 mb-2">現在のハマり回数と、過去最大ハマり回数</p>
+                        <h3 class="font-bold text-blue-800 mb-2 border-b border-blue-200 pb-1 text-sm flex justify-between"><span>❄️ スランプ限界</span></h3>
+                        <p class="text-[10px] text-blue-600 mb-2">現在のハマり回数 / 過去最大</p>
                         <ul id="coldNumbers" class="space-y-2 text-sm"></ul>
                     </div>
                 </div>
@@ -304,7 +328,7 @@
                 block: { mean: 4.5, std: 0.8 },
                 digitDup: { mean: 1.5, std: 1.0 } 
             },
-            features: { sums:[], odds:[], highLows:[], consecs:[], pulls:[], intSums:[], intStds:[], coScores:[], transScores:[], indvIntZs:[], momentums:[], decProbs:[], adjPulls:[], blockCovers:[], digitDups:[] },
+            features: { sums:[], odds:[], highLows:[], consecs:[], pulls:[], intSums:[], intStds:[], coScores:[], transScores:[], indvIntZs:[], momentums:[], decProbs:[], adjPulls:[], blockCovers:[], digitDups:[], emptyBlocks:[] },
             weights: { sum: 100, odd: 100, highLow: 100, consec: 100, pull: 100, int: 100, intStd: 100, coScore: 100, trans: 100, indvInt: 100, momentum: 100, adj: 100, dec: 100, block: 100, digitDup: 100 },
             histMean: 8500,
             histStd: 500
@@ -318,11 +342,14 @@
             analysisSection: document.getElementById('analysisSection'),
             analysisTitle: document.getElementById('analysisTitle'),
             latestDraw: document.getElementById('latestDraw'),
-            macroStats: document.getElementById('macroStats'), // NEW
-            patternStats: document.getElementById('patternStats'), // NEW
-            hotNumbers: document.getElementById('hotNumbers'), // NEW
-            momentumNumbers: document.getElementById('momentumNumbers'), // NEW
-            worstNumbers: document.getElementById('worstNumbers'), // NEW
+            macroStats: document.getElementById('macroStats'),
+            blockShareStats: document.getElementById('blockShareStats'), // NEW
+            patternStats: document.getElementById('patternStats'),
+            hotNumbers: document.getElementById('hotNumbers'),
+            momentumNumbers: document.getElementById('momentumNumbers'),
+            worstNumbers: document.getElementById('worstNumbers'),
+            coldMomentumNumbers: document.getElementById('coldMomentumNumbers'), // NEW
+            pullNumbers: document.getElementById('pullNumbers'), // NEW
             simulationSection: document.getElementById('simulationSection'),
             bestPairs: document.getElementById('bestPairs'),
             bestTransitions: document.getElementById('bestTransitions'),
@@ -632,7 +659,7 @@
             let transitionMatrix = Array.from({length: 38}, () => Array(38).fill(0));
             let decadeCounts = {};
             
-            let fLists = { sums:[], odds:[], highLows:[], consecs:[], pulls:[], intSums:[], intStds:[], coScores:[], transScores:[], indvIntZs:[], momentums:[], decProbs:[], adjPulls:[], blockCovers:[], digitDups:[] };
+            let fLists = { sums:[], odds:[], highLows:[], consecs:[], pulls:[], intSums:[], intStds:[], coScores:[], transScores:[], indvIntZs:[], momentums:[], decProbs:[], adjPulls:[], blockCovers:[], digitDups:[], emptyBlocks:[] };
             
             let tempIntervals = Array(38).fill(0); 
             let maxIntervals = Array(38).fill(0);
@@ -686,6 +713,11 @@
                 mainNums.forEach(n => dCounts[n%10]++);
                 let dDup = 0; dCounts.forEach(c => { if(c>1) dDup+=(c-1); });
                 fLists.digitDups.push(dDup);
+
+                // 空白番台の判定
+                let bCounts = [0,0,0,0];
+                mainNums.forEach(n => { if(n<=9) bCounts[0]++; else if(n<=19) bCounts[1]++; else if(n<=29) bCounts[2]++; else bCounts[3]++; });
+                fLists.emptyBlocks.push(bCounts.includes(0) ? 1 : 0);
                 
                 if (pDraw !== null) {
                     fLists.pulls.push(mainNums.filter(n => pDraw.includes(n)).length);
@@ -843,12 +875,42 @@
                 </div>
             `;
 
+            // 番台シェアの計算と表示
+            let blocks = [0, 0, 0, 0];
+            for(let i=1; i<=37; i++) {
+                if(i <= 9) blocks[0] += statsData.nFreq[i];
+                else if(i <= 19) blocks[1] += statsData.nFreq[i];
+                else if(i <= 29) blocks[2] += statsData.nFreq[i];
+                else blocks[3] += statsData.nFreq[i];
+            }
+            let totalBlocks = blocks.reduce((a,b)=>a+b, 0);
+            let blockPct = blocks.map(b => ((b/totalBlocks)*100).toFixed(1));
+            
+            elements.blockShareStats.innerHTML = `
+                <div class="flex justify-between text-xs text-slate-600 mb-1 px-1">
+                    <span class="w-1/4 text-center">1桁 (${blockPct[0]}%)</span>
+                    <span class="w-1/4 text-center">10番台 (${blockPct[1]}%)</span>
+                    <span class="w-1/4 text-center">20番台 (${blockPct[2]}%)</span>
+                    <span class="w-1/4 text-center">30番台 (${blockPct[3]}%)</span>
+                </div>
+                <div class="flex h-3 rounded-full overflow-hidden w-full shadow-inner">
+                    <div class="bg-yellow-400" style="width: ${blockPct[0]}%"></div>
+                    <div class="bg-blue-400" style="width: ${blockPct[1]}%"></div>
+                    <div class="bg-red-400" style="width: ${blockPct[2]}%"></div>
+                    <div class="bg-green-400" style="width: ${blockPct[3]}%"></div>
+                </div>
+            `;
+
             // 2. 特殊パターンの発生確率
             const f = statsData.features;
             const tLen = f.sums.length || 1;
             const prob = (arr, condition) => ((arr.filter(condition).length / tLen) * 100).toFixed(1);
 
             elements.patternStats.innerHTML = `
+                <div class="flex justify-between items-center p-2 border-b border-slate-100">
+                    <span class="text-slate-600">いずれかの番台が1つも出ない</span>
+                    <span class="font-bold text-indigo-600 text-lg">${prob(f.emptyBlocks, x => x === 1)}%</span>
+                </div>
                 <div class="flex justify-between items-center p-2 border-b border-slate-100">
                     <span class="text-slate-600">連番が1組以上含まれる</span>
                     <span class="font-bold text-indigo-600 text-lg">${prob(f.consecs, x => x > 0)}%</span>
@@ -868,10 +930,6 @@
                 <div class="flex justify-between items-center p-2 border-b border-slate-100">
                     <span class="text-slate-600">合計値が極端に低い (100未満)</span>
                     <span class="font-bold text-indigo-600 text-lg">${prob(f.sums, x => x < 100)}%</span>
-                </div>
-                <div class="flex justify-between items-center p-2 border-b border-slate-100">
-                    <span class="text-slate-600">合計値が極端に高い (160以上)</span>
-                    <span class="font-bold text-indigo-600 text-lg">${prob(f.sums, x => x >= 160)}%</span>
                 </div>
             `;
 
@@ -902,6 +960,25 @@
                 <li class="flex justify-between items-center bg-white p-2 rounded border border-orange-100">
                     <div class="ball-mini rounded-full flex items-center justify-center text-white ${getBallColorClass(item.n)}">${item.n}</div>
                     <span class="font-bold text-orange-600">${item.m > 0 ? '+'+item.m.toFixed(3) : item.m.toFixed(3)}</span>
+                </li>
+            `).join('');
+
+            let coldMomArr = [...momArr].reverse();
+            elements.coldMomentumNumbers.innerHTML = coldMomArr.slice(0,5).map(item => `
+                <li class="flex justify-between items-center bg-white p-2 rounded border border-cyan-100">
+                    <div class="ball-mini rounded-full flex items-center justify-center text-white ${getBallColorClass(item.n)}">${item.n}</div>
+                    <span class="font-bold text-cyan-700">${item.m.toFixed(3)}</span>
+                </li>
+            `).join('');
+
+            // 引っ張りTop5
+            let pullArr = [];
+            for(let i=1; i<=37; i++) pullArr.push({n: i, c: (statsData.transitionMatrix[i] ? statsData.transitionMatrix[i][i] : 0)});
+            pullArr.sort((a,b)=>b.c - a.c);
+            elements.pullNumbers.innerHTML = pullArr.slice(0,5).map(item => `
+                <li class="flex justify-between items-center bg-white p-2 rounded border border-teal-100">
+                    <span class="font-bold flex items-center gap-1 text-teal-700"><div class="ball-mini rounded-full flex items-center justify-center text-white ${getBallColorClass(item.n)}">${item.n}</div> ➔ <div class="ball-mini rounded-full flex items-center justify-center text-white ${getBallColorClass(item.n)}">${item.n}</div></span>
+                    <span class="font-bold text-teal-700">${item.c}回</span>
                 </li>
             `).join('');
 
