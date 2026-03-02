@@ -205,7 +205,7 @@
                     </div>
                 </div>
 
-                <!-- NEW: 全37数字 詳細データ一覧 -->
+                <!-- 全37数字 詳細データ一覧 -->
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
                     <h3 class="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2 text-sm flex items-center gap-2">📋 全37数字 詳細アナリティクス一覧</h3>
                     <p class="text-[10px] text-slate-500 mb-2">各数字の全体を通したパフォーマンスと現在の状態（ハマり・勢い）を一覧で確認できます。表はスクロール可能です。</p>
@@ -260,11 +260,18 @@
             <!-- STEP 3: シミュレーション -->
             <section id="simulationSection" class="hidden bg-slate-800 text-white p-6 rounded-xl shadow-2xl relative overflow-hidden mt-8">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10 pointer-events-none"></div>
-                <h2 class="text-xl font-bold border-b border-slate-600 pb-2 mb-6 text-indigo-300">STEP 3: 確率過程最適化シミュレーション</h2>
+                <h2 class="text-xl font-bold border-b border-slate-600 pb-2 mb-4 text-indigo-300 relative z-10">STEP 3: 予想シミュレーションの実行</h2>
                 
-                <div class="flex flex-col gap-5 mb-6 relative z-10">
+                <!-- NEW: モード切り替えタブ -->
+                <div class="flex gap-2 mb-6 border-b border-slate-700 pb-0 relative z-10">
+                    <button id="tabAi" class="px-5 py-3 bg-indigo-600 text-white rounded-t-lg font-bold text-sm transition">🤖 AI最適化お任せ</button>
+                    <button id="tabCustom" class="px-5 py-3 bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white rounded-t-lg font-bold text-sm transition">⚙️ カスタム条件指定</button>
+                </div>
+
+                <!-- AI設定エリア (既存) -->
+                <div id="aiConfigArea" class="flex flex-col gap-5 mb-6 relative z-10">
                     <div class="flex flex-col md:flex-row md:items-start gap-4">
-                        <label class="font-bold text-slate-300 shrink-0 mt-2">計算モード:</label>
+                        <label class="font-bold text-slate-300 shrink-0 mt-2 text-sm">計算モード:</label>
                         <div class="flex flex-col gap-3 bg-slate-900/50 p-4 rounded-lg w-full border border-slate-700">
                             <label class="flex items-start gap-2 cursor-pointer group">
                                 <input type="radio" name="simMode" value="count" checked class="mt-1 text-indigo-500 focus:ring-indigo-500 w-4 h-4">
@@ -287,20 +294,66 @@
                                 <option value="300000">300,000回</option>
                             </select>
                         </div>
-                        
                         <div id="allModeUI" class="flex items-center gap-2 hidden">
                             <span class="text-indigo-300 text-xs font-bold bg-indigo-900/50 px-3 py-1 rounded border border-indigo-700/50">※ブラウザの性能により処理時間が異なります</span>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="flex items-center gap-2 mt-2 md:mt-0">
-                            <label class="font-bold text-slate-300 text-sm shrink-0">予想口数:</label>
-                            <input type="number" id="ticketCount" min="1" max="30" value="5" class="p-2 border border-slate-600 rounded bg-slate-800 text-white text-sm outline-none focus:border-indigo-500 w-24 text-center font-bold">
-                            <span class="text-slate-400 text-sm">口</span>
+                <!-- NEW: カスタム設定エリア -->
+                <div id="customConfigArea" class="hidden flex flex-col gap-5 mb-6 relative z-10">
+                    <p class="text-xs text-slate-400 mb-2">解析されたデータを元に、自分の好みのトレンドに合致する数字を重み付きで抽出（ルーレット選択）します。</p>
+                    
+                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                        <h3 class="font-bold text-indigo-300 text-sm mb-3">📌 軸数字の指定（絶対に含める数字：最大6個）</h3>
+                        <div id="axisNumbers" class="flex flex-wrap gap-2">
+                            <!-- JSでボタン生成 -->
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-5 rounded-lg border border-slate-700 space-y-6">
+                        <h3 class="font-bold text-indigo-300 text-sm mb-2 border-b border-slate-700 pb-2">🎚️ 数字抽出のトレンド設定</h3>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-2">
+                                <span>🧊 出にくい (Cold)</span>
+                                <span class="font-bold text-white">通算出現の傾向</span>
+                                <span>🔥 出やすい (Hot)</span>
+                            </div>
+                            <input type="range" id="weightFreq" min="-100" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-2">
+                                <span>📉 勢い下降 (逆張り)</span>
+                                <span class="font-bold text-white">直近の勢い (モメンタム)</span>
+                                <span>📈 勢い上昇 (順張り)</span>
+                            </div>
+                            <input type="range" id="weightMom" min="-100" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between text-xs text-slate-300 mb-2">
+                                <span>✨ 出たばかり</span>
+                                <span class="font-bold text-white">現在のハマり度合い</span>
+                                <span>💤 大ハマり (スランプ)</span>
+                            </div>
+                            <input type="range" id="weightInt" min="-100" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
                         </div>
                     </div>
                 </div>
+
+                <!-- 共通の予想口数設定 -->
+                <div class="flex items-center justify-between p-4 bg-slate-900 rounded-lg border border-slate-700 relative z-10 mb-6">
+                    <span class="font-bold text-slate-300 text-sm">出力する予想口数:</span>
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="ticketCount" min="1" max="30" value="5" class="p-2 border border-slate-600 rounded bg-slate-800 text-white font-bold outline-none focus:border-indigo-500 w-24 text-center">
+                        <span class="text-slate-400 text-sm">口</span>
+                    </div>
+                </div>
+
                 <button id="btnSimulate" class="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black py-4 px-4 rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.5)] transition flex justify-center items-center gap-2 text-lg z-10 group">
-                    <span class="relative z-10">🎰 最新アルゴリズムで予想を生成する</span>
+                    <span class="relative z-10" id="btnSimulateText">🎰 最新アルゴリズムで予想を生成する</span>
                     <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
                 </button>
             </section>
@@ -321,6 +374,8 @@
         let totalDraws = 0;
         let testTargetDraw = null;
         let testTargetBonus = [];
+        let isCustomMode = false;
+        let selectedAxisNumbers = [];
 
         // 統計モデル全体を保持するオブジェクト
         let statsData = {
@@ -374,7 +429,7 @@
             worstNumbers: document.getElementById('worstNumbers'),
             coldMomentumNumbers: document.getElementById('coldMomentumNumbers'), 
             pullNumbers: document.getElementById('pullNumbers'), 
-            allNumbersTable: document.getElementById('allNumbersTable'), // NEW
+            allNumbersTable: document.getElementById('allNumbersTable'),
             simulationSection: document.getElementById('simulationSection'),
             bestPairs: document.getElementById('bestPairs'),
             bestTransitions: document.getElementById('bestTransitions'),
@@ -383,12 +438,24 @@
             histScoreSection: document.getElementById('histScoreSection'),
             scoreDistribution: document.getElementById('scoreDistribution'),
             avgHistScore: document.getElementById('avgHistScore'),
+            
+            // UI elements for Mode switching
+            tabAi: document.getElementById('tabAi'),
+            tabCustom: document.getElementById('tabCustom'),
+            aiConfigArea: document.getElementById('aiConfigArea'),
+            customConfigArea: document.getElementById('customConfigArea'),
+            axisNumbers: document.getElementById('axisNumbers'),
+            weightFreq: document.getElementById('weightFreq'),
+            weightMom: document.getElementById('weightMom'),
+            weightInt: document.getElementById('weightInt'),
+
             modeRadios: document.querySelectorAll('input[name="simMode"]'),
             countModeUI: document.getElementById('countModeUI'),
             allModeUI: document.getElementById('allModeUI'),
             simCount: document.getElementById('simCount'),
             ticketCount: document.getElementById('ticketCount'),
             btnSimulate: document.getElementById('btnSimulate'),
+            btnSimulateText: document.getElementById('btnSimulateText'),
             resultSection: document.getElementById('resultSection'),
             predictionResults: document.getElementById('predictionResults')
         };
@@ -407,7 +474,7 @@
                 console.log('初期データの読み込みをスキップしました:', error);
             });
 
-        // UIイベント
+        // --- UIイベント: モード切り替え ---
         elements.modeRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
                 elements.countModeUI.classList.add('hidden');
@@ -416,6 +483,29 @@
                 else if (e.target.value === 'all') elements.allModeUI.classList.remove('hidden');
             });
         });
+
+        // タブ切り替え
+        elements.tabAi.addEventListener('click', () => {
+            isCustomMode = false;
+            elements.tabAi.classList.replace('bg-slate-700', 'bg-indigo-600');
+            elements.tabAi.classList.replace('text-slate-300', 'text-white');
+            elements.tabCustom.classList.replace('bg-indigo-600', 'bg-slate-700');
+            elements.tabCustom.classList.replace('text-white', 'text-slate-300');
+            elements.aiConfigArea.classList.remove('hidden');
+            elements.customConfigArea.classList.add('hidden');
+            elements.btnSimulateText.innerText = "🎰 最新アルゴリズムで予想を生成する";
+        });
+
+        elements.tabCustom.addEventListener('click', () => {
+            isCustomMode = true;
+            elements.tabCustom.classList.replace('bg-slate-700', 'bg-indigo-600');
+            elements.tabCustom.classList.replace('text-slate-300', 'text-white');
+            elements.tabAi.classList.replace('bg-indigo-600', 'bg-slate-700');
+            elements.tabAi.classList.replace('text-white', 'text-slate-300');
+            elements.customConfigArea.classList.remove('hidden');
+            elements.aiConfigArea.classList.add('hidden');
+            elements.btnSimulateText.innerText = "⚙️ 条件に従って重み付き抽出を実行";
+        });
         
         // 予想口数のバリデーション
         elements.ticketCount.addEventListener('change', (e) => {
@@ -423,6 +513,33 @@
             if(isNaN(val) || val < 1) e.target.value = 1;
             if(val > 30) e.target.value = 30;
         });
+
+        // 軸数字ボタンの初期化
+        function initAxisButtons() {
+            let axisHtml = '';
+            for(let i=1; i<=37; i++){
+                axisHtml += `<button class="axis-btn w-10 h-10 rounded-full bg-slate-800 border border-slate-600 text-sm font-bold text-slate-300 hover:bg-indigo-500 hover:text-white transition" data-num="${i}">${i}</button>`;
+            }
+            elements.axisNumbers.innerHTML = axisHtml;
+            selectedAxisNumbers = [];
+
+            document.querySelectorAll('.axis-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    let num = parseInt(e.target.dataset.num);
+                    if(selectedAxisNumbers.includes(num)) {
+                        selectedAxisNumbers = selectedAxisNumbers.filter(n => n !== num);
+                        e.target.classList.remove('bg-indigo-500', 'text-white', 'ring-2', 'ring-indigo-300');
+                        e.target.classList.add('bg-slate-800', 'text-slate-300');
+                    } else {
+                        if(selectedAxisNumbers.length >= 6) { alert('軸数字（固定する数字）は最大6個までです。'); return; }
+                        selectedAxisNumbers.push(num);
+                        e.target.classList.remove('bg-slate-800', 'text-slate-300');
+                        e.target.classList.add('bg-indigo-500', 'text-white', 'ring-2', 'ring-indigo-300');
+                    }
+                });
+            });
+        }
+        initAxisButtons();
 
         // ユーティリティ
         function getBallColorClass(num) {
@@ -1146,17 +1263,82 @@
             return { score: finalScore, rawScore: base.score, sum: base.sum, oddCount: base.oddCount, pullCount: base.pullCount, consecCount: base.consecCount, transScore: base.transScore };
         }
 
+        // --- カスタム条件による重み付きランダム抽出 ---
+        function generateCustomDraws(tCount) {
+            let axis = [...selectedAxisNumbers];
+            let wFreq = parseInt(elements.weightFreq.value) / 100; // -1 to 1
+            let wMom = parseInt(elements.weightMom.value) / 100;
+            let wInt = parseInt(elements.weightInt.value) / 100;
+
+            // 正規化ヘルパー (最小値〜最大値を -1.0 〜 +1.0 に変換)
+            let norm = (val, arr) => {
+                let validArr = arr.slice(1);
+                let max = Math.max(...validArr), min = Math.min(...validArr);
+                if(max === min) return 0;
+                return ((val - min) / (max - min)) * 2 - 1; 
+            };
+
+            let weights = Array(38).fill(0);
+            for(let i=1; i<=37; i++) {
+                let fNorm = norm(statsData.mainFreq[i], statsData.mainFreq);
+                let mNorm = norm(statsData.momentumMap[i], statsData.momentumMap);
+                let iNorm = norm(statsData.intervals[i], statsData.intervals);
+                
+                // 基準点10に対し、スライダーの重みを反映
+                let score = 10 + (wFreq * fNorm * 10) + (wMom * mNorm * 10) + (wInt * iNorm * 10);
+                weights[i] = Math.max(0.1, score); // 確率が0以下にならないように
+            }
+
+            let results = [];
+            for(let i=0; i<tCount; i++) {
+                let d = [...axis];
+                let available = [];
+                for(let j=1; j<=37; j++) if(!axis.includes(j)) available.push(j);
+
+                // 7個になるまでルーレット抽出
+                while(d.length < 7) {
+                    let totalW = available.reduce((acc, num) => acc + weights[num], 0);
+                    let r = Math.random() * totalW;
+                    let current = 0;
+                    for(let j=0; j<available.length; j++) {
+                        current += weights[available[j]];
+                        if(r <= current) {
+                            d.push(available[j]);
+                            available.splice(j, 1);
+                            break;
+                        }
+                    }
+                }
+                d.sort((a,b)=>a-b);
+                // 評価スコアも一応付与しておく（AIスコアとして表示される）
+                results.push({d: d, e: evaluateDraw(d)}); 
+            }
+            return results;
+        }
+
         elements.btnSimulate.addEventListener('click', () => {
-            const mode = document.querySelector('input[name="simMode"]:checked').value;
             const tCount = parseInt(elements.ticketCount.value) || 5;
             
             elements.btnSimulate.disabled = true;
-            elements.btnSimulate.innerHTML = `<div class="loader border-white border-top-transparent"></div> <span class="relative z-10">AI演算中...</span>`;
+            elements.btnSimulate.innerHTML = `<div class="loader border-white border-top-transparent"></div> <span class="relative z-10">演算中...</span>`;
             elements.resultSection.classList.add('hidden');
 
             setTimeout(() => {
-                if (mode === 'count') runCountMode(parseInt(elements.simCount.value), tCount);
-                else runAllMode(tCount);
+                if (isCustomMode) {
+                    let preds = generateCustomDraws(tCount);
+                    // カスタムモードはユニーク抽出などをせずダイレクトに表示
+                    renderResults(preds, "カスタム条件・重み付き抽出", "カスタム条件抽出");
+                    
+                    elements.btnSimulate.disabled = false;
+                    elements.btnSimulate.innerHTML = `<span class="relative z-10" id="btnSimulateText">⚙️ 条件に従って重み付き抽出を実行</span>`;
+                    elements.resultSection.classList.remove('hidden');
+                    elements.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                } else {
+                    const mode = document.querySelector('input[name="simMode"]:checked').value;
+                    if (mode === 'count') runCountMode(parseInt(elements.simCount.value), tCount);
+                    else runAllMode(tCount);
+                }
             }, 50);
         });
 
@@ -1233,17 +1415,19 @@
             renderResults(preds, iters, modeName);
             
             elements.btnSimulate.disabled = false;
-            elements.btnSimulate.innerHTML = `<span class="relative z-10">🎰 最新アルゴリズムで予想を生成する</span>`;
+            elements.btnSimulate.innerHTML = `<span class="relative z-10" id="btnSimulateText">🎰 最新アルゴリズムで予想を生成する</span>`;
             elements.resultSection.classList.remove('hidden');
             elements.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function renderResults(preds, iters, modeName) {
+        function renderResults(preds, itersInfo, modeName) {
+            let calcSpace = typeof itersInfo === 'number' ? `${itersInfo.toLocaleString()} 通り` : itersInfo;
+            
             let infoHtml = `
                 <div class="col-span-full text-center text-sm text-slate-700 mb-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <b class="text-indigo-600 text-lg block mb-2">${modeName} 完了</b>
-                    計算空間 <b>${iters.toLocaleString()} 通り</b> を評価し、<br>
-                    AIが特定した「現実に出現しやすい偏り（ボリュームゾーン）」に最も合致した <b>${preds.length} パターン</b>を抽出しました。
+                    計算空間 <b>${calcSpace}</b> を評価し、<br>
+                    ${isCustomMode ? 'あなたの指定したトレンド条件と軸数字に合致する <b>' + preds.length + ' パターン</b>を生成しました。' : 'AIが特定した「現実に出現しやすい偏り（ボリュームゾーン）」に最も合致した <b>' + preds.length + ' パターン</b>を抽出しました。'}
                 </div>
             `;
 
@@ -1271,8 +1455,8 @@
                 }
 
                 let cardHtml = `
-                    <div class="bg-white p-5 rounded-xl shadow-md border ${i===0?'border-indigo-400 ring-2 ring-indigo-100':'border-slate-200'} relative overflow-hidden flex flex-col">
-                        ${i===0?'<div class="absolute top-0 left-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-br-lg shadow z-10">AI 本命推奨</div>':''}
+                    <div class="bg-white p-5 rounded-xl shadow-md border ${(!isCustomMode && i===0)?'border-indigo-400 ring-2 ring-indigo-100':'border-slate-200'} relative overflow-hidden flex flex-col">
+                        ${(!isCustomMode && i===0)?'<div class="absolute top-0 left-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-br-lg shadow z-10">AI 本命推奨</div>':''}
                         
                         <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 mt-2">
                             <span class="font-black text-slate-700 text-lg tracking-widest">予想 ${i + 1}</span>
@@ -1283,7 +1467,7 @@
                         </div>
                         
                         <div class="flex flex-wrap gap-2 md:gap-3 justify-center mb-5 flex-grow">
-                            ${p.d.map(n => `<div class="loto-ball ${getBallColorClass(n)}">${n}</div>`).join('')}
+                            ${p.d.map(n => `<div class="loto-ball ${getBallColorClass(n)} ${selectedAxisNumbers.includes(n) ? 'ring-4 ring-indigo-500 ring-offset-2' : ''}">${n}</div>`).join('')}
                         </div>
                         
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 mt-auto">
