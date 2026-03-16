@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ロト7 予想シミュレーター Ultimate AI v4.1 (True Validation)</title>
+    <title>ロト7 予想シミュレーター Ultimate AI v6.0 (Deep-Trace)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -30,9 +30,9 @@
 <body class="text-slate-800 p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
-        <div class="relative bg-gradient-to-r from-slate-800 to-indigo-900 p-6 text-white text-center">
+        <div class="relative bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 p-6 text-white text-center">
             <h1 class="text-3xl font-black mb-2 tracking-wider mt-2">🎯 ロト7 予想シミュレーター Ultimate AI</h1>
-            <p class="text-sm opacity-90 text-indigo-200">自己学習型ウェイト ＆ 真・バックテスト機能搭載 v4.1</p>
+            <p class="text-sm opacity-90 text-indigo-200">Deep-Trace 遷移モデル ＆ 温度付き確率サンプリング搭載 v6.0</p>
         </div>
 
         <div class="p-6 md:p-8 space-y-8">
@@ -63,7 +63,6 @@
                         </div>
                     </div>
                     <div class="w-full lg:w-64 flex flex-col justify-end gap-3">
-                        <button id="btnMockData" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2 px-4 rounded transition text-sm shadow-sm">🧪 ダミーデータ生成</button>
                         <button id="btnAnalyze" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg shadow-md transition flex items-center justify-center gap-2"><span>📊 データ解析を実行</span></button>
                     </div>
                 </div>
@@ -71,22 +70,32 @@
 
             <!-- STEP 2 -->
             <section id="analysisSection" class="hidden space-y-6">
-                <h2 class="text-xl font-bold border-b-2 border-indigo-500 pb-2 text-slate-800">STEP 2: トレンド解析・分布モデル結果</h2>
+                <h2 class="text-xl font-bold border-b-2 border-indigo-500 pb-2 text-slate-800">STEP 2: トレンド・波乱予測モデル結果</h2>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div class="lg:col-span-1 space-y-6">
                         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm h-full">
                             <h3 class="font-bold text-slate-800 mb-4 text-sm flex items-center gap-2 border-b border-slate-100 pb-2">📊 マクロ分布ターゲット</h3>
                             <div class="space-y-4" id="macroStats"></div>
+                            
+                            <div class="mt-6 pt-4 border-t border-slate-100">
+                                <h4 class="text-xs font-bold text-slate-600 mb-2">📍 ポジション別 期待帯域</h4>
+                                <div id="posStats" class="space-y-1"></div>
+                            </div>
+
+                            <div class="mt-6 pt-4 border-t border-slate-100">
+                                <h4 class="text-xs font-bold text-slate-600 mb-3">🔮 次回の展開(波乱)予測</h4>
+                                <div id="trendForecast" class="space-y-1"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                         <div class="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center">
                             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">📋 数字別ポテンシャル・マトリックス</h3>
                             <span class="text-[10px] text-slate-500">※ 直前までのデータで構築されたモデルです</span>
                         </div>
-                        <div class="p-4 overflow-x-auto max-h-80 overflow-y-auto">
+                        <div class="p-4 overflow-x-auto flex-1 overflow-y-auto" style="max-h: 550px;">
                             <table class="w-full text-xs text-left whitespace-nowrap">
                                 <thead class="bg-white sticky top-0 z-10 shadow-sm">
                                     <tr class="text-slate-600 border-b border-slate-200">
@@ -113,7 +122,7 @@
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
                         <div class="absolute right-0 top-0 h-full w-1 bg-indigo-500"></div>
                         <h3 class="font-bold text-slate-800 text-sm mb-3 border-b border-slate-100 pb-2 flex justify-between items-center">
-                            <span>🧲 マルコフ遷移予測</span>
+                            <span>🧲 Deep-Trace 遷移予測</span>
                             <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded border border-slate-200">
                                 <span class="text-[9px] text-slate-500 font-bold">直前出目:</span><div id="latestDraw" class="flex gap-0.5"></div>
                             </div>
@@ -124,10 +133,13 @@
             </section>
 
             <!-- STEP 3 -->
-            <section id="simulationSection" class="hidden bg-slate-800 text-white p-6 md:p-8 rounded-xl shadow-2xl relative overflow-hidden mt-8">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10 pointer-events-none"></div>
+            <section id="simulationSection" class="hidden bg-slate-800 text-white p-6 md:p-8 rounded-xl shadow-2xl relative overflow-hidden mt-8 border border-slate-700">
+                <div class="absolute top-0 right-0 w-48 h-48 bg-purple-600 rounded-full blur-[80px] opacity-30 -mr-10 -mt-10 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-600 rounded-full blur-[60px] opacity-20 -ml-10 -mb-10 pointer-events-none"></div>
                 
-                <h2 class="text-xl font-bold border-b border-slate-600 pb-2 mb-6 text-indigo-300 relative z-10">STEP 3: AIによる予想生成 (ミメティックアルゴリズム)</h2>
+                <h2 class="text-xl font-bold border-b border-slate-600 pb-2 mb-6 text-indigo-300 relative z-10 flex items-center gap-2">
+                    STEP 3: 3並列AIによる予想生成 <span class="bg-indigo-600 text-[10px] px-2 py-0.5 rounded text-white font-mono">Tri-Core Ensemble</span>
+                </h2>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
                     <div class="space-y-6">
@@ -135,7 +147,7 @@
                             <h3 class="text-sm font-bold text-indigo-300 mb-4 flex justify-between border-b border-slate-700 pb-2 items-center">
                                 <span>⚙️ AI 評価ウェイト設定</span>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[10px] text-slate-400">🤖 Holdout自動最適化</span>
+                                    <span class="text-[10px] text-slate-400">🤖 Tri-Core 動的リソース配分</span>
                                     <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                                         <input type="checkbox" name="toggle" id="autoTuneToggle" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 z-10 top-0"/>
                                         <label for="autoTuneToggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-600 cursor-pointer"></label>
@@ -143,11 +155,12 @@
                                 </div>
                             </h3>
                             
-                            <div id="autoTuneInfo" class="text-xs text-indigo-200 bg-indigo-900/30 p-3 rounded mb-4 border border-indigo-500/30">
-                                💡 <b>Auto-Tuning有効:</b> テスト対象や未来のデータを含まないクリーンな検証データで、AI自身が最適な評価比率を自動探索します。（過学習を防止）
+                            <div id="autoTuneInfo" class="text-xs text-indigo-200 bg-indigo-900/30 p-3 rounded mb-4 border border-indigo-500/30 leading-relaxed">
+                                💡 <b>Tri-Core Ensemble 有効:</b> <br>
+                                次回の「波乱予測確率」に基づいて、3つのAIコア（自動最適化、順張り、大穴逆張り）の演算リソースとサンプリング温度を動的に配分します。
                             </div>
 
-                            <div id="manualSettings" class="space-y-5 opacity-50 pointer-events-none transition-opacity">
+                            <div id="manualSettings" class="space-y-5 opacity-50 pointer-events-none transition-opacity hidden">
                                 <div>
                                     <div class="flex justify-between text-xs text-slate-300 mb-2">
                                         <span>❄️ ハマり重視</span><span class="font-bold text-white">トレンド傾向</span><span>🔥 勢い重視</span>
@@ -155,8 +168,18 @@
                                     <input type="range" id="weightMom" min="-100" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
                                 </div>
                             </div>
-                            
+
                             <div class="pt-5 mt-4 border-t border-slate-700">
+                                <div class="flex justify-between text-xs text-slate-300 mb-2 font-bold">
+                                    <span class="text-blue-400">🛡️ 広域分散 (安全/網張り)</span>
+                                    <span class="text-white">買い目の戦略</span>
+                                    <span class="text-fuchsia-400">⚔️ 集中突破 (ハイリスク)</span>
+                                </div>
+                                <input type="range" id="strategyRisk" min="0" max="100" value="20" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 shadow-inner">
+                                <p class="text-[10px] text-slate-400 mt-2 leading-tight">※ <b>広域分散:</b> 予想がバラけやすく広く拾いやすいです。<br>※ <b>集中突破:</b> 似た買い目を許容し、当たりが1箇所に集中して上位等級を狙いやすくなります。</p>
+                            </div>
+                            
+                            <div class="pt-2 mt-4">
                                 <div class="flex justify-between text-xs text-slate-300 mb-2">
                                     <span>📌 軸数字 (最大4個まで固定)</span><button id="btnClearAxis" class="text-red-400 hover:text-red-300 text-xs underline">クリア</button>
                                 </div>
@@ -164,32 +187,34 @@
                             </div>
                         </div>
 
+                        <!-- ガチ改善: 予想口数スライダー -->
                         <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                            <span class="text-sm font-bold text-slate-300">生成する予想口数:</span>
-                            <div class="flex items-center gap-3">
-                                <input type="number" id="ticketCount" min="1" max="20" value="5" class="p-2 border border-slate-600 rounded bg-slate-800 text-white font-bold text-center w-24 focus:ring-2 focus:ring-indigo-500 outline-none">
-                                <span class="text-sm text-slate-400">口</span>
+                            <span class="text-sm font-bold text-slate-300 w-1/3">生成する予想口数:</span>
+                            <div class="flex items-center gap-3 w-2/3">
+                                <input type="range" id="ticketCount" min="1" max="30" value="5" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 shadow-inner">
+                                <span id="ticketCountDisplay" class="text-xl font-bold text-indigo-400 font-mono w-10 text-right">5</span>
+                                <span class="text-sm text-slate-400 font-bold">口</span>
                             </div>
                         </div>
 
-                        <button id="btnSimulate" class="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black py-4 px-6 rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.5)] transition flex justify-center items-center gap-3 text-lg group">
+                        <button id="btnSimulate" class="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:via-purple-500 hover:to-indigo-500 text-white font-black py-4 px-6 rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.5)] transition flex justify-center items-center gap-3 text-lg group bg-[length:200%_auto] hover:bg-right duration-500">
                             <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                            <span class="relative z-10" id="btnSimulateText">🎰 予想の探索を開始する</span>
+                            <span class="relative z-10" id="btnSimulateText">🎰 波乱予測に基づくAI探索を開始</span>
                         </button>
                     </div>
 
                     <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 flex flex-col justify-center relative shadow-inner">
                         <div id="progressArea" class="text-center opacity-30 transition-opacity duration-300">
-                            <div class="text-indigo-400 mb-2 text-4xl" id="progressIcon">🧬</div>
-                            <h3 class="font-bold text-indigo-300 mb-1 text-sm tracking-wider" id="progressTitle">待機中</h3>
-                            <div class="text-xs text-slate-400 mb-5 h-8" id="progressDesc">実行ボタンを押すと、遺伝的アルゴリズムと局所探索による最適解の抽出が開始されます。</div>
+                            <div class="text-indigo-400 mb-2 text-4xl" id="progressIcon">⚛️</div>
+                            <h3 class="font-bold text-indigo-300 mb-1 text-sm tracking-wider" id="progressTitle">System Standby</h3>
+                            <div class="text-xs text-slate-400 mb-5 h-8" id="progressDesc">実行ボタンを押すと、3つのAIコアが同時に稼働し、最適解の抽出と多様性フィルタリングを行います。</div>
                             
-                            <div class="w-full bg-slate-800 h-2 mb-2 rounded-full overflow-hidden border border-slate-700">
-                                <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-0 transition-all duration-75 relative"></div>
+                            <div class="w-full bg-slate-800 h-2 mb-2 rounded-full overflow-hidden border border-slate-700 relative">
+                                <div id="progressBar" class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 h-full w-0 transition-all duration-75 relative"></div>
                             </div>
                             <div class="flex justify-between text-xs text-slate-400 font-mono">
-                                <span>世代: <b id="genCount" class="text-white">0</b> / 150</span>
-                                <span>最大適応度: <b id="maxScoreVal" class="text-purple-400">0.00</b></span>
+                                <span>Core Task: <b id="genCount" class="text-white">0</b> / 100%</span>
+                                <span>Global Max Fit: <b id="maxScoreVal" class="text-purple-400">0.00</b></span>
                             </div>
                         </div>
                     </div>
@@ -199,8 +224,8 @@
             <!-- 結果表示 -->
             <section id="resultSection" class="hidden mt-12 mb-8">
                 <div class="text-center mb-8">
-                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-wide">✨ AI最適化 予想結果 ✨</h2>
-                    <p class="text-sm text-slate-500 mt-2">AIが発見した高スコアな組み合わせ群から、互いに被りが少なくなるよう厳選した買い目です。</p>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-wide">✨ Tri-Core AI 最適化結果 ✨</h2>
+                    <p class="text-sm text-slate-500 mt-2">波乱予測と設定された戦略に基づき、AIが数万パターンの中から買い目を厳選しました。</p>
                 </div>
                 <div id="testResultArea" class="mb-6 max-w-2xl mx-auto"></div>
                 <div id="predictionResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -219,10 +244,11 @@
 
         const UI = {
             csvData: document.getElementById('csvData'),
-            btnMockData: document.getElementById('btnMockData'),
             btnAnalyze: document.getElementById('btnAnalyze'),
             analysisSection: document.getElementById('analysisSection'),
             macroStats: document.getElementById('macroStats'),
+            posStats: document.getElementById('posStats'),
+            trendForecast: document.getElementById('trendForecast'),
             heatmapTable: document.getElementById('heatmapTable'),
             bestPairs: document.getElementById('bestPairs'),
             latestDraw: document.getElementById('latestDraw'),
@@ -231,10 +257,12 @@
             axisNumbers: document.getElementById('axisNumbers'),
             btnClearAxis: document.getElementById('btnClearAxis'),
             weightMom: document.getElementById('weightMom'),
+            strategyRisk: document.getElementById('strategyRisk'),
             autoTuneToggle: document.getElementById('autoTuneToggle'),
             manualSettings: document.getElementById('manualSettings'),
             autoTuneInfo: document.getElementById('autoTuneInfo'),
             ticketCount: document.getElementById('ticketCount'),
+            ticketCountDisplay: document.getElementById('ticketCountDisplay'), // 追加
             btnSimulate: document.getElementById('btnSimulate'),
             btnSimulateText: document.getElementById('btnSimulateText'),
             progressArea: document.getElementById('progressArea'),
@@ -249,7 +277,6 @@
             testResultArea: document.getElementById('testResultArea')
         };
 
-        // UI toggles
         const analyzeRadios = document.querySelectorAll('input[name="analyzeMode"]');
         const backtestOptions = document.getElementById('backtestOptions');
         analyzeRadios.forEach(r => {
@@ -261,28 +288,21 @@
 
         UI.autoTuneToggle.addEventListener('change', (e) => {
             if(e.target.checked) {
-                UI.manualSettings.classList.add('opacity-50', 'pointer-events-none');
+                UI.manualSettings.classList.add('hidden');
                 UI.autoTuneInfo.style.display = 'block';
             } else {
+                UI.manualSettings.classList.remove('hidden');
                 UI.manualSettings.classList.remove('opacity-50', 'pointer-events-none');
                 UI.autoTuneInfo.style.display = 'none';
             }
         });
 
-        fetch('Data.txt').then(res => res.ok ? res.text() : Promise.reject('err')).then(data => { UI.csvData.value = data; }).catch(e => console.log('Data.txt skip'));
-
-        UI.btnMockData.addEventListener('click', () => {
-            let csv = [];
-            for (let i = 1; i <= 300; i++) {
-                let avail = Array.from({length: 37}, (_, i) => i + 1);
-                let draw = [];
-                for(let j=0; j<9; j++) draw.push(avail.splice(Math.floor(Math.random() * avail.length), 1)[0]);
-                let main = draw.slice(0, 7).sort((a,b)=>a-b);
-                let bonus = draw.slice(7, 9);
-                csv.push(`第${i}回,${main.join(',')},${bonus.join(',')}`);
-            }
-            UI.csvData.value = csv.join('\n');
+        // 口数スライダーの連動
+        UI.ticketCount.addEventListener('input', (e) => {
+            UI.ticketCountDisplay.innerText = e.target.value;
         });
+
+        fetch('Data.txt').then(res => res.ok ? res.text() : Promise.reject('err')).then(data => { UI.csvData.value = data; }).catch(e => console.log('Data.txt skip'));
 
         let axisHtml = '';
         for(let i=1; i<=37; i++){
@@ -311,11 +331,15 @@
         
         UI.btnClearAxis.addEventListener('click', () => { selectedAxisNumbers = []; updateAxisUI(); });
 
+        // ガチ改善: ボーナス数字も抽出するようにパース関数を修正
         function parseLine(line) {
             let nums = line.split(/[\s,]+/).filter(t => /^\d+$/.test(t)).map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 37);
             if (nums.length >= 7) {
                 let main = nums.slice(0, 7);
-                return main.every((val, i, arr) => !i || (val > arr[i - 1])) ? nums : [...[...main].sort((a, b) => a - b), ...nums.slice(7)];
+                let bonus = nums.slice(7); 
+                let isSorted = main.every((val, i, arr) => !i || (val > arr[i - 1]));
+                if(!isSorted) main.sort((a,b)=>a-b);
+                return [...main, ...bonus];
             }
             return null;
         }
@@ -324,7 +348,6 @@
             if (num <= 9) return 'ball-yellow'; if (num <= 19) return 'ball-blue'; if (num <= 29) return 'ball-red'; return 'ball-green';
         }
 
-        // --- Model Building ---
         function getFeatures(nums, prevNums) {
             let sum = nums.reduce((a,b)=>a+b, 0);
             let odd = nums.filter(n => n%2!==0).length;
@@ -352,13 +375,22 @@
             let intHist = Array.from({length:38}, () => []); 
             let pairEma = Array.from({length:38}, () => Array(38).fill(0));
             let transEma = Array.from({length:38}, () => Array(38).fill(0));
+            // 新規: ボーナス数字からの遷移と前々回からの2次遷移
+            let bonusTransEma = Array.from({length:38}, () => Array(38).fill(0));
+            let transEma2nd = Array.from({length:38}, () => Array(38).fill(0));
 
             let featuresLists = { sum: [], odd: [], consec: [], dupe: [], pull: [], slide: [] };
+            let posFeatures = Array.from({length: 7}, () => []); 
             let pastSets = []; 
+            
             let prevMain = null;
+            let prevBonus = null;
+            let prevPrevMain = null;
+            let soiList = [];
 
             for(let i=0; i<N; i++) {
                 let main = draws[i].slice(0, 7);
+                let bonus = draws[i].length > 7 ? draws[i].slice(7) : [];
                 let w = weights[i];
                 pastSets.push(new Set(main));
 
@@ -367,16 +399,32 @@
                 featuresLists.consec.push(f.consec); featuresLists.dupe.push(f.dupe);
                 featuresLists.pull.push(f.pull); featuresLists.slide.push(f.slide);
                 
+                main.forEach((num, idx) => posFeatures[idx].push(num));
+                
+                // トラッキング
                 if(prevMain) prevMain.forEach(p => main.forEach(c => transEma[p][c] += w));
+                if(prevBonus) prevBonus.forEach(p => main.forEach(c => bonusTransEma[p][c] += w));
+                if(prevPrevMain) prevPrevMain.forEach(p => main.forEach(c => transEma2nd[p][c] += w));
 
+                let currentSoi = 0;
                 for(let j=1; j<=37; j++) {
-                    if(main.includes(j)) { intHist[j].push(intervals[j]); intervals[j] = 0; freqEma[j] += w; }
+                    if(main.includes(j)) { 
+                        currentSoi += intervals[j]; 
+                        intHist[j].push(intervals[j]); 
+                        intervals[j] = 0; 
+                        freqEma[j] += w; 
+                    }
                     else intervals[j]++;
                 }
+                soiList.push(currentSoi);
+
                 for(let j=0; j<main.length; j++) {
                     for(let k=j+1; k<main.length; k++) { pairEma[main[j]][main[k]] += w; pairEma[main[k]][main[j]] += w; }
                 }
+                
+                prevPrevMain = prevMain;
                 prevMain = main;
+                prevBonus = bonus;
             }
 
             let pNum = freqEma.map(f => f / totalWeight);
@@ -396,10 +444,10 @@
 
             let momentum = Array(38).fill(0);
             let recentW = 0, recentFreq = Array(38).fill(0);
-            let startIdx = Math.max(0, N - 15); // モメンタムの期間を広げて過信を防止
+            let startIdx = Math.max(0, N - 15);
             for(let i=startIdx; i<N; i++) {
                 let main = draws[i].slice(0, 7);
-                let rw = Math.pow(0.85, N - 1 - i); // 急激な減衰をマイルドに
+                let rw = Math.pow(0.85, N - 1 - i);
                 recentW += rw;
                 main.forEach(n => recentFreq[n] += rw);
             }
@@ -408,39 +456,61 @@
             let meanSum = featuresLists.sum.reduce((a,b)=>a+b,0)/N;
             let stdSum = Math.sqrt(featuresLists.sum.reduce((a,b)=>a+Math.pow(b-meanSum,2),0)/N);
             
-            // ラプラススムージングを強化して「これしか出ない」という過信を防ぐ
+            let posDist = [];
+            for(let i=0; i<7; i++) {
+                let mean = posFeatures[i].reduce((a,b)=>a+b,0)/N;
+                let std = Math.sqrt(posFeatures[i].reduce((a,b)=>a+Math.pow(b-mean,2),0)/N);
+                posDist.push({mean, std});
+            }
+
             let createPdf = (arr, maxV) => {
                 let smoothing = 1.0; 
                 let c = Array(maxV+1).fill(0); arr.forEach(v => {if(v>=0&&v<=maxV) c[v]++;});
                 return (x) => (x<0||x>maxV) ? -10 : Math.log((c[x]+smoothing)/(N+(maxV+1)*smoothing));
             };
 
+            let sortedSoi = [...soiList].sort((a,b)=>a-b);
+            let thNormal = sortedSoi[Math.floor(sortedSoi.length * 0.4)]; 
+            let thChaos = sortedSoi[Math.floor(sortedSoi.length * 0.8)];  
+
+            let states = soiList.map(s => s >= thChaos ? 'Chaos' : (s >= thNormal ? 'Warning' : 'Normal'));
+            let transMatrix = {
+                Normal: { Normal: 0, Warning: 0, Chaos: 0, total: 0 },
+                Warning: { Normal: 0, Warning: 0, Chaos: 0, total: 0 },
+                Chaos: { Normal: 0, Warning: 0, Chaos: 0, total: 0 }
+            };
+
+            for(let i=0; i<states.length-1; i++) {
+                transMatrix[states[i]][states[i+1]]++;
+                transMatrix[states[i]].total++;
+            }
+
+            let lastState = states[states.length-1];
+            let nextProb = {
+                Normal: (transMatrix[lastState].Normal + 1) / (transMatrix[lastState].total + 3),
+                Warning: (transMatrix[lastState].Warning + 1) / (transMatrix[lastState].total + 3),
+                Chaos: (transMatrix[lastState].Chaos + 1) / (transMatrix[lastState].total + 3)
+            };
+
             return {
-                N: N, lastDraw: prevMain, pastSets: pastSets,
+                N: N, lastDraw: prevMain, lastBonus: prevBonus, lastLastDraw: prevPrevMain, pastSets: pastSets,
                 pNum: pNum, intervals: intervals, avgInt: avgInt, momentum: momentum,
-                pairScores: pairScores, transEma: transEma,
+                pairScores: pairScores, transEma: transEma, bonusTransEma: bonusTransEma, transEma2nd: transEma2nd,
                 dist: {
-                    sum: { mean: meanSum, std: stdSum },
-                    oddPdf: createPdf(featuresLists.odd, 7),
-                    consecPdf: createPdf(featuresLists.consec, 6),
-                    dupePdf: createPdf(featuresLists.dupe, 6),
-                    pullPdf: createPdf(featuresLists.pull, 7),
-                    slidePdf: createPdf(featuresLists.slide, 7)
-                }
+                    sum: { mean: meanSum, std: stdSum }, pos: posDist,
+                    oddPdf: createPdf(featuresLists.odd, 7), consecPdf: createPdf(featuresLists.consec, 6),
+                    dupePdf: createPdf(featuresLists.dupe, 6), pullPdf: createPdf(featuresLists.pull, 7), slidePdf: createPdf(featuresLists.slide, 7)
+                },
+                trendForecast: { lastState: lastState, nextProb: nextProb, thNormal: thNormal, thChaos: thChaos }
             };
         }
 
-        // --- Auto-Tuning Engine (Holdout Validation) ---
         function calibrateWeights(trainData) {
             let valSize = Math.min(5, trainData.length - 20);
             if(valSize <= 0) return { mom: 8, cold: 1, pair: 1, trans: 50 };
             
-            // 評価用データ (未来)
             let valDraws = trainData.slice(-valSize);
-            // 訓練用データ (過去)
             let subTrainData = trainData.slice(0, trainData.length - valSize);
-            
-            // 全く未来を知らない状態でモデルを仮構築
             let subModel = buildStatisticalModel(subTrainData);
             
             let bestWeights = { mom: 8, cold: 1, pair: 1, trans: 50 };
@@ -448,15 +518,12 @@
             
             for(let iter=0; iter<200; iter++) {
                 let w = {
-                    mom: Math.random() * 12,
-                    cold: Math.random() * 4,
-                    pair: Math.random() * 2,
-                    trans: Math.random() * 80
+                    mom: Math.random() * 12, cold: Math.random() * 4, pair: Math.random() * 2, trans: Math.random() * 80
                 };
                 let totalScore = 0;
                 valDraws.forEach(draw => {
                     let main = draw.slice(0, 7);
-                    totalScore += evaluateFitness(main, subModel, w, true); // penalty off
+                    totalScore += evaluateFitness(main, subModel, w, true); 
                 });
                 
                 if(totalScore > bestScore) { bestScore = totalScore; bestWeights = w; }
@@ -487,13 +554,10 @@
                 if(last.length > 7) testTargetBonus = last.slice(7);
                 
                 testTargetLabel = `${offset} 回前`;
-                // ターゲットの「直前」まででデータをバッサリ切る（未来情報を完全に遮断）
                 trainData = trainData.slice(0, targetIdx);
             }
 
             model = buildStatisticalModel(trainData);
-            
-            // Auto-Tune (隔離された環境で実行)
             tunedWeights = calibrateWeights(trainData);
             
             renderAnalysis();
@@ -519,6 +583,36 @@
                 </div>
             `;
 
+            let posHtml = '';
+            for(let i=0; i<7; i++) {
+                let m = model.dist.pos[i];
+                let low = Math.max(1, Math.round(m.mean - m.std));
+                let high = Math.min(37, Math.round(m.mean + m.std));
+                posHtml += `<div class="flex justify-between text-[10px]"><span class="text-slate-500">第${i+1}数字</span><span class="text-indigo-600 font-mono font-bold">${low} ~ ${high}</span></div>`;
+            }
+            UI.posStats.innerHTML = posHtml;
+
+            let tf = model.trendForecast;
+            let stateColors = { Normal: 'text-blue-600', Warning: 'text-amber-500', Chaos: 'text-fuchsia-600' };
+            let stateLabels = { Normal: '順当 (トレンド継続)', Warning: '中波乱 (トレンド変化)', Chaos: '大波乱 (イレギュラー)' };
+
+            UI.trendForecast.innerHTML = `
+                <div class="flex justify-between items-center text-xs mb-1.5">
+                    <span class="text-slate-500">直前回の判定:</span><span class="font-bold ${stateColors[tf.lastState]}">${stateLabels[tf.lastState]}</span>
+                </div>
+                <div class="flex justify-between items-center text-xs mb-1.5">
+                    <span class="text-slate-500">次回の順当(継続)確率:</span><span class="font-bold text-blue-600">${(tf.nextProb.Normal*100).toFixed(1)}%</span>
+                </div>
+                <div class="flex justify-between items-center text-xs mb-1">
+                    <span class="text-slate-500">次回の波乱(逆張り)警戒度:</span><span class="font-bold text-fuchsia-600">${((tf.nextProb.Warning + tf.nextProb.Chaos)*100).toFixed(1)}%</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1 flex shadow-inner">
+                    <div class="bg-blue-500 h-full" style="width: ${tf.nextProb.Normal*100}%" title="順当"></div>
+                    <div class="bg-amber-400 h-full" style="width: ${tf.nextProb.Warning*100}%" title="中波乱"></div>
+                    <div class="bg-fuchsia-500 h-full" style="width: ${tf.nextProb.Chaos*100}%" title="大波乱"></div>
+                </div>
+            `;
+
             let hHtml = '';
             for(let i=1; i<=37; i++) {
                 let fNorm = Math.min(1, model.pNum[i] / (1/37));
@@ -531,11 +625,11 @@
 
                 hHtml += `
                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                        <td class="py-2"><div class="ball-mini rounded-full flex items-center justify-center text-white mx-auto ${getBallColorClass(i)}">${i}</div></td>
-                        <td class="py-2 text-right"><div class="w-16 h-2 bg-slate-100 rounded inline-block overflow-hidden"><div class="h-full bg-slate-400" style="width:${fNorm*50}%"></div></div></td>
-                        <td class="py-2 text-right"><div class="w-16 h-2 bg-slate-100 rounded inline-block overflow-hidden"><div class="h-full bg-orange-500" style="width:${hotOpacity*100}%"></div></div></td>
-                        <td class="py-2 text-right"><span class="text-[10px] mr-2 text-slate-500">${model.intervals[i]}回</span><div class="w-12 h-2 bg-slate-100 rounded inline-block overflow-hidden"><div class="h-full bg-blue-500" style="width:${coldOpacity*100}%"></div></div></td>
-                        <td class="py-2 text-right text-xs ${potColor}">${pot > 0 ? '+'+pot.toFixed(2) : pot.toFixed(2)}</td>
+                        <td class="py-1.5"><div class="ball-mini rounded-full flex items-center justify-center text-white mx-auto ${getBallColorClass(i)}">${i}</div></td>
+                        <td class="py-1.5 text-right"><div class="w-12 md:w-16 h-2 bg-slate-100 rounded inline-block overflow-hidden"><div class="h-full bg-slate-400" style="width:${fNorm*50}%"></div></div></td>
+                        <td class="py-1.5 text-right"><div class="w-12 md:w-16 h-2 bg-slate-100 rounded inline-block overflow-hidden"><div class="h-full bg-orange-500" style="width:${hotOpacity*100}%"></div></div></td>
+                        <td class="py-1.5 text-right"><span class="text-[9px] mr-1 text-slate-500 hidden sm:inline-block">${model.intervals[i]}回</span><div class="w-8 md:w-12 h-2 bg-slate-100 rounded inline-block overflow-hidden"><div class="h-full bg-blue-500" style="width:${coldOpacity*100}%"></div></div></td>
+                        <td class="py-1.5 text-right text-xs ${potColor}">${pot > 0 ? '+'+pot.toFixed(2) : pot.toFixed(2)}</td>
                     </tr>
                 `;
             }
@@ -545,43 +639,57 @@
             for(let i=1; i<=37; i++) for(let j=i+1; j<=37; j++) if(model.pairScores[i][j] > 0) pairs.push({a:i, b:j, s:model.pairScores[i][j]});
             pairs.sort((a,b)=>b.s - a.s);
             UI.bestPairs.innerHTML = pairs.slice(0, 6).map(p => `
-                <div class="flex items-center justify-center gap-2 bg-purple-50 rounded border border-purple-100 py-1.5 px-2">
-                    <span class="text-purple-700 font-bold text-sm">${p.a}</span><span class="text-xs text-purple-400">＆</span><span class="text-purple-700 font-bold text-sm">${p.b}</span>
+                <div class="flex items-center justify-center gap-1.5 bg-purple-50 rounded border border-purple-100 py-1.5 px-2">
+                    <span class="text-purple-700 font-bold text-xs sm:text-sm">${p.a}</span><span class="text-[10px] text-purple-400">＆</span><span class="text-purple-700 font-bold text-xs sm:text-sm">${p.b}</span>
                 </div>
             `).join('');
 
             UI.latestDraw.innerHTML = model.lastDraw.map(n => `<div class="ball-mini w-5 h-5 text-[10px] rounded-full flex items-center justify-center text-white ${getBallColorClass(n)}">${n}</div>`).join('');
+            
+            // UI表示用に通常の遷移スコアを計算
             let transScores = Array(38).fill(0);
             model.lastDraw.forEach(prev => { for(let i=1; i<=37; i++) transScores[i] += model.transEma[prev][i]; });
             let pulls = Array.from({length:37}, (_,i)=>i+1).sort((a,b)=>transScores[b]-transScores[a]).slice(0, 6);
             UI.pullPredictions.innerHTML = pulls.map(n => `
-                <div class="flex items-center justify-between bg-amber-50 rounded border border-amber-100 py-1.5 px-3">
-                    <span class="text-amber-700 font-bold text-sm">${n}</span><span class="text-[10px] text-amber-600">${(transScores[n]*100).toFixed(1)}pt</span>
+                <div class="flex items-center justify-between bg-amber-50 rounded border border-amber-100 py-1.5 px-2 sm:px-3">
+                    <span class="text-amber-700 font-bold text-xs sm:text-sm">${n}</span><span class="text-[9px] text-amber-600">${(transScores[n]*100).toFixed(1)}pt</span>
                 </div>
             `).join('');
         }
 
-        // --- Fitness Evaluation ---
+        // ガチ改善: Deep-Trace（ボーナス・2次遷移）の適応度組み込み
         function evaluateFitness(combo, m, weights, skipPenalty=false) {
             let score = 0; 
             let f = getFeatures(combo, m.lastDraw);
+            
+            let riskVal = parseInt(UI.strategyRisk.value) / 100;
 
-            // 1. マクロ分布尤度
-            let variance = m.dist.sum.std * m.dist.sum.std;
-            score += -0.5 * Math.log(2 * Math.PI * variance) - (Math.pow(f.sum - m.dist.sum.mean, 2) / (2 * variance));
+            let varianceSum = m.dist.sum.std * m.dist.sum.std;
+            score += -0.5 * Math.log(2 * Math.PI * varianceSum) - (Math.pow(f.sum - m.dist.sum.mean, 2) / (2 * varianceSum));
             score += m.dist.oddPdf(f.odd) * 2; 
             score += m.dist.consecPdf(f.consec) * 1.5;
             score += m.dist.dupePdf(f.dupe);
             score += m.dist.pullPdf(f.pull) * 1.5; 
             score += m.dist.slidePdf(f.slide) * 1.5; 
 
-            // 2. ミクロポテンシャル
+            let posScore = 0;
+            for(let i=0; i<7; i++) {
+                let pVar = m.dist.pos[i].std * m.dist.pos[i].std;
+                if(pVar > 0) posScore += -0.5 * Math.log(2 * Math.PI * pVar) - (Math.pow(combo[i] - m.dist.pos[i].mean, 2) / (2 * pVar));
+            }
+            score += posScore * 2; 
+
             let momScore = 0; let pairScore = 0; let coldScore = 0; let transScore = 0;
             for(let i=0; i<7; i++) {
                 let n = combo[i];
                 momScore += m.momentum[n];
                 if(m.avgInt[n] > 0) coldScore += (m.intervals[n] / m.avgInt[n]);
-                m.lastDraw.forEach(prev => { transScore += m.transEma[prev][n]; });
+                
+                // Deep-Trace 評価合算
+                if(m.lastDraw) m.lastDraw.forEach(prev => { transScore += m.transEma[prev][n]; });
+                if(m.lastBonus) m.lastBonus.forEach(prev => { transScore += m.bonusTransEma[prev][n] * 1.5; }); // ボーナス昇格は重視
+                if(m.lastLastDraw) m.lastLastDraw.forEach(prev => { transScore += m.transEma2nd[prev][n] * 0.8; }); // 前々回からの復活
+                
                 for(let j=i+1; j<7; j++) pairScore += m.pairScores[n][combo[j]];
             }
             
@@ -592,16 +700,19 @@
 
             if(skipPenalty) return score;
 
-            // 3. 重複致死ペナルティ
             let maxMatch = 0;
             for(let i=0; i<m.pastSets.length; i++) {
                 let c = 0; for(let j=0; j<7; j++) if(m.pastSets[i].has(combo[j])) c++;
                 if(c > maxMatch) maxMatch = c;
                 if(maxMatch >= 5) break; 
             }
-            if(maxMatch >= 5) score -= Math.pow(10, maxMatch);
+            
+            if(maxMatch >= 5) {
+                score -= Math.pow(10, maxMatch); 
+            } else if(maxMatch === 4) {
+                score -= 50 * (1 - riskVal); 
+            }
 
-            // 4. 軸数字制約
             if(selectedAxisNumbers.length > 0) {
                 let axisMatch = 0;
                 selectedAxisNumbers.forEach(a => { if(combo.includes(a)) axisMatch++; });
@@ -611,11 +722,34 @@
             return score;
         }
 
-        // --- Memetic Algorithm ---
-        function randomCombo(axis) {
+        // ガチ改善: 温度付き確率サンプリングによる初期集団生成 (Temperature-scaled Roulette Selection)
+        function weightedRandomCombo(axis, m, temp) {
             let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !axis.includes(n));
             let res = [...axis];
-            while(res.length < 7) res.push(avail.splice(Math.floor(Math.random()*avail.length), 1)[0]);
+            
+            let weights = avail.map(n => {
+                let baseProb = m.pNum[n] || 0.01;
+                let mom = m.momentum[n] || 0;
+                let w = baseProb + (mom * 0.5); // 勢いも加味した基本確率
+                if (w <= 0) w = 0.001;
+                return Math.pow(w, 1/temp); // 温度(temp)による確率の平滑化・先鋭化
+            });
+
+            while(res.length < 7) {
+                let sumW = weights.reduce((a,b)=>a+b, 0);
+                let r = Math.random() * sumW;
+                let acc = 0;
+                let selectedIdx = -1;
+                for(let i=0; i<avail.length; i++) {
+                    acc += weights[i];
+                    if(r <= acc) { selectedIdx = i; break; }
+                }
+                if(selectedIdx === -1) selectedIdx = avail.length - 1;
+                
+                res.push(avail[selectedIdx]);
+                avail.splice(selectedIdx, 1);
+                weights.splice(selectedIdx, 1);
+            }
             return res.sort((a,b)=>a-b);
         }
 
@@ -643,93 +777,127 @@
 
         async function runMemeticAlgorithm(targetCount) {
             UI.progressArea.classList.remove('opacity-30');
-            UI.progressIcon.classList.add('animate-pulse');
-            UI.progressTitle.innerText = "探索実行中...";
-            UI.progressDesc.innerText = "AIが数十万パターンの組み合わせを評価し、最適解を抽出しています。";
+            UI.progressIcon.classList.add('animate-spin');
+            UI.progressTitle.innerText = "Tri-Core 演算実行中...";
+            UI.progressDesc.innerText = "波乱予測に基づき、3つのAIコアがリソースを配分して最適解を探索しています。";
             
-            const POP_SIZE = 300;     
-            const MAX_GEN = 150;      
+            const MAX_GEN = 120;      
             const MUTATION_RATE = 0.2; 
-            const ELITE_SIZE = 15;    
+            const ELITE_SIZE = 10;    
             
-            let activeWeights;
+            let coreConfigs = [];
+            
             if(UI.autoTuneToggle.checked && tunedWeights) {
-                activeWeights = tunedWeights;
+                let tf = model.trendForecast;
+                let totalDynamicPop = 500;
+                
+                let popHot = Math.max(50, Math.floor(totalDynamicPop * tf.nextProb.Normal));
+                let popCold = totalDynamicPop - popHot;
+                
+                coreConfigs.push({ name: "Auto-Tuned", pop: 250, temp: 1.2, w: tunedWeights });
+                coreConfigs.push({ name: "Hot-Seeker", pop: popHot, temp: 0.8, w: { mom: 15, cold: -2, pair: 2, trans: 80 } }); 
+                coreConfigs.push({ name: "Cold-Breaker", pop: popCold, temp: 2.5, w: { mom: -2, cold: 10, pair: 0, trans: 10 } }); 
+                
             } else {
                 let wVal = parseInt(UI.weightMom.value) / 100;
-                activeWeights = {
+                let w = {
                     mom: wVal >= 0 ? 8 * (1 + wVal) : 8 * (1 - Math.abs(wVal)),
                     cold: wVal >= 0 ? 1 * (1 - wVal) : 3 * (1 + Math.abs(wVal)),
                     pair: 1.0, trans: 50
                 };
+                coreConfigs = [
+                    { name: "Manual 1", pop: 250, temp: 1.2, w: w },
+                    { name: "Manual 2", pop: 250, temp: 1.2, w: w },
+                    { name: "Manual 3", pop: 250, temp: 1.2, w: w }
+                ];
             }
-
-            let pop = [];
-            for(let i=0; i<POP_SIZE; i++) {
-                let c = randomCombo(selectedAxisNumbers);
-                pop.push({ c: c, f: evaluateFitness(c, model, activeWeights) });
-            }
-            pop.sort((a,b) => b.f - a.f);
 
             let bestOverAll = []; 
+            let totalSteps = coreConfigs.length * MAX_GEN;
+            let currentStep = 0;
+            let globalMaxScore = -Infinity;
 
-            for(let gen=1; gen<=MAX_GEN; gen++) {
-                if(gen % 3 === 0) {
-                    UI.progressBar.style.width = `${(gen/MAX_GEN)*100}%`;
-                    UI.genCount.innerText = gen;
-                    UI.maxScoreVal.innerText = pop[0].f.toFixed(2);
-                    await new Promise(r => setTimeout(r, 0)); 
+            for(let coreIdx = 0; coreIdx < coreConfigs.length; coreIdx++) {
+                let activeConfig = coreConfigs[coreIdx];
+                let POP_SIZE = activeConfig.pop;
+                let activeWeights = activeConfig.w;
+                let activeTemp = activeConfig.temp;
+                
+                let pop = [];
+                // ガチ改善: コアの性格に応じた温度付きルーレットサンプリングで初期集団を生成
+                for(let i=0; i<POP_SIZE; i++) {
+                    let c = weightedRandomCombo(selectedAxisNumbers, model, activeTemp);
+                    pop.push({ c: c, f: evaluateFitness(c, model, activeWeights) });
                 }
-
-                let nextPop = [];
-                for(let i=0; i<ELITE_SIZE; i++) {
-                    let e = pop[i];
-                    if(Math.random() < 0.1) e = localSearch(e, model, activeWeights); // 局所探索
-                    nextPop.push(e);
-                }
-
-                while(nextPop.length < POP_SIZE) {
-                    let p1Idx = Math.floor(Math.pow(Math.random(), 2.5) * POP_SIZE);
-                    let p2Idx = Math.floor(Math.pow(Math.random(), 2.5) * POP_SIZE);
-                    let p1 = pop[p1Idx].c; let p2 = pop[p2Idx].c;
-
-                    let childSet = new Set(selectedAxisNumbers);
-                    let pool = [...p1, ...p2];
-                    while(childSet.size < 7 && pool.length > 0) childSet.add(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
-                    
-                    let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !childSet.has(n));
-                    while(childSet.size < 7) childSet.add(avail.splice(Math.floor(Math.random()*avail.length), 1)[0]);
-                    let child = Array.from(childSet);
-
-                    if(Math.random() < MUTATION_RATE) {
-                        let nonAxis = []; child.forEach((n, i) => { if(!selectedAxisNumbers.includes(n)) nonAxis.push(i); });
-                        if(nonAxis.length > 0) {
-                            let tIdx = nonAxis[Math.floor(Math.random() * nonAxis.length)];
-                            let availM = Array.from({length:37}, (_,i)=>i+1).filter(n => !child.includes(n));
-                            child[tIdx] = availM[Math.floor(Math.random() * availM.length)];
-                        }
-                    }
-                    child.sort((a,b)=>a-b);
-                    nextPop.push({ c: child, f: evaluateFitness(child, model, activeWeights) });
-                }
-
-                pop = nextPop;
                 pop.sort((a,b) => b.f - a.f);
 
-                for (let i = 0; i < 10; i++) {
-                    let cStr = pop[i].c.join(',');
-                    if(!bestOverAll.some(b => b.c.join(',') === cStr)) bestOverAll.push(pop[i]);
+                for(let gen=1; gen<=MAX_GEN; gen++) {
+                    currentStep++;
+                    if(currentStep % 5 === 0) {
+                        UI.progressBar.style.width = `${(currentStep/totalSteps)*100}%`;
+                        UI.genCount.innerText = `${Math.round((currentStep/totalSteps)*100)}`;
+                        if(pop[0].f > globalMaxScore) globalMaxScore = pop[0].f;
+                        UI.maxScoreVal.innerText = globalMaxScore.toFixed(2);
+                        await new Promise(r => setTimeout(r, 0)); 
+                    }
+
+                    let nextPop = [];
+                    for(let i=0; i<Math.min(ELITE_SIZE, POP_SIZE); i++) {
+                        let e = pop[i];
+                        if(Math.random() < 0.15) e = localSearch(e, model, activeWeights);
+                        nextPop.push(e);
+                    }
+
+                    while(nextPop.length < POP_SIZE) {
+                        let p1Idx = Math.floor(Math.pow(Math.random(), 2.5) * POP_SIZE);
+                        let p2Idx = Math.floor(Math.pow(Math.random(), 2.5) * POP_SIZE);
+                        let p1 = pop[p1Idx].c; let p2 = pop[p2Idx].c;
+
+                        let childSet = new Set(selectedAxisNumbers);
+                        let pool = [...p1, ...p2];
+                        while(childSet.size < 7 && pool.length > 0) childSet.add(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
+                        
+                        let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !childSet.has(n));
+                        while(childSet.size < 7) childSet.add(avail.splice(Math.floor(Math.random()*avail.length), 1)[0]);
+                        let child = Array.from(childSet);
+
+                        if(Math.random() < MUTATION_RATE) {
+                            let nonAxis = []; child.forEach((n, i) => { if(!selectedAxisNumbers.includes(n)) nonAxis.push(i); });
+                            if(nonAxis.length > 0) {
+                                let tIdx = nonAxis[Math.floor(Math.random() * nonAxis.length)];
+                                let availM = Array.from({length:37}, (_,i)=>i+1).filter(n => !child.includes(n));
+                                child[tIdx] = availM[Math.floor(Math.random() * availM.length)];
+                            }
+                        }
+                        child.sort((a,b)=>a-b);
+                        nextPop.push({ c: child, f: evaluateFitness(child, model, activeWeights) });
+                    }
+
+                    pop = nextPop;
+                    pop.sort((a,b) => b.f - a.f);
+
+                    for (let i = 0; i < 5; i++) {
+                        if(i >= pop.length) break;
+                        let cStr = pop[i].c.join(',');
+                        if(!bestOverAll.some(b => b.c.join(',') === cStr)) {
+                            let unifiedScore = evaluateFitness(pop[i].c, model, tunedWeights || coreConfigs[0].w, true);
+                            bestOverAll.push({ c: pop[i].c, f: unifiedScore });
+                        }
+                    }
                 }
-                bestOverAll.sort((a,b)=>b.f - a.f);
-                if(bestOverAll.length > targetCount * 10) bestOverAll = bestOverAll.slice(0, targetCount * 10);
             }
 
-            // 多様性フィルタ
-            UI.progressDesc.innerText = "買い目の多様性（カバレッジ）を最大化するようフィルタリングを適用中...";
+            bestOverAll.sort((a,b)=>b.f - a.f);
+            if(bestOverAll.length > targetCount * 15) bestOverAll = bestOverAll.slice(0, targetCount * 15);
+
+            UI.progressDesc.innerText = "設定された買い目戦略（分散/集中）に基づき、最終候補をフィルタリング中...";
             await new Promise(r => setTimeout(r, 50));
 
             let finalSelection = [bestOverAll[0]]; 
             let candidates = bestOverAll.slice(1);
+            let riskVal = parseInt(UI.strategyRisk.value) / 100;
+            
+            let requiredDist = 4 - Math.floor(riskVal * 2);
 
             while(finalSelection.length < targetCount && candidates.length > 0) {
                 let bestCandIdx = -1;
@@ -744,7 +912,13 @@
                         if(dist < minDistance) minDistance = dist;
                     }
                     
-                    let diversityBonus = minDistance >= 3 ? (minDistance * 5) : -100; 
+                    let diversityBonus;
+                    if(minDistance >= requiredDist) {
+                        diversityBonus = minDistance * 5;
+                    } else {
+                        diversityBonus = -200 * (1 - riskVal);
+                    }
+                    
                     let evalScore = cand.f + diversityBonus;
                     if(evalScore > bestCandScore) { bestCandScore = evalScore; bestCandIdx = i; }
                 }
@@ -758,7 +932,7 @@
                 if(r === finalSelection[0]) r.displayScore = 99.9;
             });
 
-            return { predictions: finalSelection, usedWeights: activeWeights };
+            return { predictions: finalSelection, usedWeights: tunedWeights || coreConfigs[0].w };
         }
 
         UI.btnSimulate.addEventListener('click', async () => {
@@ -766,7 +940,7 @@
             const tCount = parseInt(UI.ticketCount.value) || 5;
             
             UI.btnSimulate.disabled = true;
-            UI.btnSimulate.innerHTML = `<div class="loader loader-white"></div> <span class="relative z-10">演算中...</span>`;
+            UI.btnSimulate.innerHTML = `<div class="loader loader-white"></div> <span class="relative z-10">Tri-Core 演算中...</span>`;
             UI.resultSection.classList.add('hidden');
             UI.testResultArea.innerHTML = '';
             UI.progressBar.style.width = '0%';
@@ -776,11 +950,11 @@
 
             setTimeout(() => {
                 UI.btnSimulate.disabled = false;
-                UI.btnSimulate.innerHTML = `<div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div><span class="relative z-10" id="btnSimulateText">🎰 予想の探索を開始する</span>`;
+                UI.btnSimulate.innerHTML = `<div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div><span class="relative z-10" id="btnSimulateText">🎰 波乱予測に基づくAI探索を開始</span>`;
                 UI.progressArea.classList.add('opacity-30');
-                UI.progressIcon.classList.remove('animate-pulse');
-                UI.progressTitle.innerText = "待機中";
-                UI.progressDesc.innerText = "実行ボタンを押すと、遺伝的アルゴリズムと局所探索による最適解の抽出が開始されます。";
+                UI.progressIcon.classList.remove('animate-spin');
+                UI.progressTitle.innerText = "System Standby";
+                UI.progressDesc.innerText = "実行ボタンを押すと、3つのAIコアが同時に稼働し、最適解の抽出と多様性フィルタリングを行います。";
                 
                 UI.resultSection.classList.remove('hidden');
                 UI.resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -790,17 +964,30 @@
         function renderResults(preds, weights) {
             if (testTargetDraw) {
                 let teScore = evaluateFitness(testTargetDraw, model, weights, false);
+                
+                let targetSoi = 0;
+                testTargetDraw.forEach(n => { targetSoi += model.intervals[n]; });
+                let actualState = targetSoi >= model.trendForecast.thChaos ? 'Chaos' : 
+                                 (targetSoi >= model.trendForecast.thNormal ? 'Warning' : 'Normal');
+                
+                let stateColors = { Normal: 'text-blue-400 border-blue-500/30 bg-blue-900/20', Warning: 'text-amber-400 border-amber-500/30 bg-amber-900/20', Chaos: 'text-fuchsia-400 border-fuchsia-500/30 bg-fuchsia-900/20' };
+                let stateLabels = { Normal: '順当', Warning: '中波乱', Chaos: '大波乱' };
+                let stateBadge = `<span class="px-2 py-0.5 rounded border text-[10px] sm:text-xs font-bold tracking-wider ${stateColors[actualState]} ml-3">${stateLabels[actualState]}</span>`;
+
                 UI.testResultArea.innerHTML = `
                     <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg text-white mb-6 relative overflow-hidden">
                         <div class="absolute left-0 top-0 h-full w-1 bg-indigo-500"></div>
-                        <b class="text-indigo-300 block mb-3 text-sm">🎯 過去検証（対象: ${testTargetLabel}）答え合わせ</b>
+                        <div class="flex items-center mb-3">
+                            <b class="text-indigo-300 text-sm">🎯 過去検証（対象: ${testTargetLabel}）答え合わせ</b>
+                            ${stateBadge}
+                        </div>
                         <div class="flex items-center gap-3 mb-3">
                             <span class="text-xs text-slate-400 w-12 font-bold">正解出目:</span>
-                            <div class="flex gap-2">
-                                ${testTargetDraw.map(n => `<div class="ball-mini rounded-full flex items-center justify-center font-bold text-white shadow ${getBallColorClass(n)}">${n}</div>`).join('')}
+                            <div class="flex gap-1.5 md:gap-2">
+                                ${testTargetDraw.map(n => `<div class="ball-mini md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-white shadow ${getBallColorClass(n)}">${n}</div>`).join('')}
                             </div>
                         </div>
-                        <div class="text-xs text-slate-300 bg-slate-900 inline-block px-3 py-1.5 rounded border border-slate-700">
+                        <div class="text-[10px] sm:text-xs text-slate-300 bg-slate-900 inline-block px-3 py-1.5 rounded border border-slate-700">
                             この正解が持っていた適応度スコア: <span class="text-indigo-400 font-bold font-mono text-sm">${teScore.toFixed(2)}</span>
                         </div>
                     </div>
@@ -816,7 +1003,7 @@
 
                 let cardHtml = `
                     <div class="bg-white p-5 rounded-xl border ${i===0?'border-indigo-400 ring-2 ring-indigo-100 shadow-md':'border-slate-200 shadow-sm'} relative flex flex-col transition hover:shadow-lg">
-                        ${i===0?'<div class="absolute top-0 left-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-br-lg shadow z-10">AI 本命推奨</div>':''}
+                        ${i===0?'<div class="absolute top-0 left-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-br-lg shadow z-10">Ensemble Best</div>':''}
                         
                         <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 mt-2">
                             <span class="font-black text-slate-700 text-lg tracking-widest">予想 ${i + 1}</span>
@@ -830,11 +1017,11 @@
                             ${p.c.map(n => `<div class="loto-ball ${getBallColorClass(n)} ${selectedAxisNumbers.includes(n) ? 'ring-4 ring-indigo-500 ring-offset-2' : ''}">${n}</div>`).join('')}
                         </div>
                         
-                        <div class="grid grid-cols-4 gap-2 text-[10px] text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100 text-center">
-                            <div><span class="block mb-0.5">合計値</span><b class="text-slate-700 font-mono text-xs">${f.sum}</b></div>
-                            <div><span class="block mb-0.5">奇:偶</span><b class="text-slate-700 font-mono text-xs">${f.odd}:${7-f.odd}</b></div>
-                            <div><span class="block mb-0.5">引っ張り</span><b class="${f.pull>0?'text-blue-600':'text-slate-700'} font-mono text-xs">${f.pull}</b></div>
-                            <div><span class="block mb-0.5">スライド</span><b class="${f.slide>0?'text-orange-600':'text-slate-700'} font-mono text-xs">${f.slide}</b></div>
+                        <div class="grid grid-cols-4 gap-1 sm:gap-2 text-[9px] sm:text-[10px] text-slate-500 bg-slate-50 p-2 sm:p-3 rounded-lg border border-slate-100 text-center">
+                            <div><span class="block mb-0.5">合計値</span><b class="text-slate-700 font-mono text-[11px] sm:text-xs">${f.sum}</b></div>
+                            <div><span class="block mb-0.5">奇:偶</span><b class="text-slate-700 font-mono text-[11px] sm:text-xs">${f.odd}:${7-f.odd}</b></div>
+                            <div><span class="block mb-0.5">引っ張り</span><b class="${f.pull>0?'text-blue-600':'text-slate-700'} font-mono text-[11px] sm:text-xs">${f.pull}</b></div>
+                            <div><span class="block mb-0.5">スライド</span><b class="${f.slide>0?'text-orange-600':'text-slate-700'} font-mono text-[11px] sm:text-xs">${f.slide}</b></div>
                         </div>
                 `;
 
@@ -847,7 +1034,7 @@
                     else if(mCount===4){pText="👏 5等相当";bgClass="bg-green-50 text-green-700 border-green-200 font-bold";}
                     else if(mCount===3&&bMatch>=1){pText="☺️ 6等相当";bgClass="bg-indigo-50 text-indigo-700 border-indigo-200 font-bold";}
                     
-                    cardHtml += `<div class="mt-4 p-3 text-center text-sm border rounded-lg ${bgClass}">結果: 本数字 <b>${mCount}</b> 個一致${bMatch>0?` (B <b>${bMatch}</b> 個)`:''} ➔ <span class="text-base ml-2">${pText}</span></div>`;
+                    cardHtml += `<div class="mt-4 p-3 text-center text-xs sm:text-sm border rounded-lg ${bgClass}">結果: 本数字 <b>${mCount}</b> 個一致${bMatch>0?` (B <b>${bMatch}</b> 個)`:''} ➔ <span class="text-base sm:text-lg ml-1 sm:ml-2">${pText}</span></div>`;
                 }
                 cardHtml += `</div>`;
                 return cardHtml;
