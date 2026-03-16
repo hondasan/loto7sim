@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ロト7 予想シミュレーター Ultimate AI v6.0 (Deep-Trace)</title>
+    <title>ロト7 予想シミュレーター Ultimate AI v8.0 (Pure Data-Driven)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -32,7 +32,7 @@
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
         <div class="relative bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 p-6 text-white text-center">
             <h1 class="text-3xl font-black mb-2 tracking-wider mt-2">🎯 ロト7 予想シミュレーター Ultimate AI</h1>
-            <p class="text-sm opacity-90 text-indigo-200">Deep-Trace 遷移モデル ＆ 温度付き確率サンプリング搭載 v6.0</p>
+            <p class="text-sm opacity-90 text-indigo-200">純粋データ駆動型(Pure Data-Driven) ＆ 真・精度特化モデル v8.0</p>
         </div>
 
         <div class="p-6 md:p-8 space-y-8">
@@ -145,9 +145,9 @@
                     <div class="space-y-6">
                         <div class="bg-slate-900/50 p-5 rounded-lg border border-slate-700 relative">
                             <h3 class="text-sm font-bold text-indigo-300 mb-4 flex justify-between border-b border-slate-700 pb-2 items-center">
-                                <span>⚙️ AI 評価ウェイト設定</span>
+                                <span>⚙️ AI 評価ウェイト ＆ 戦略設定</span>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[10px] text-slate-400">🤖 Tri-Core 動的リソース配分</span>
+                                    <span class="text-[10px] text-slate-400">🤖 完全自動最適化</span>
                                     <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                                         <input type="checkbox" name="toggle" id="autoTuneToggle" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300 z-10 top-0"/>
                                         <label for="autoTuneToggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-600 cursor-pointer"></label>
@@ -156,8 +156,9 @@
                             </h3>
                             
                             <div id="autoTuneInfo" class="text-xs text-indigo-200 bg-indigo-900/30 p-3 rounded mb-4 border border-indigo-500/30 leading-relaxed">
-                                💡 <b>Tri-Core Ensemble 有効:</b> <br>
-                                次回の「波乱予測確率」に基づいて、3つのAIコア（自動最適化、順張り、大穴逆張り）の演算リソースとサンプリング温度を動的に配分します。
+                                💡 <b>Full Auto-Tuning 有効:</b> <br>
+                                AIが過去のトレンドを分析し、評価ウェイト、AIの配分、そして<b>「買い目のリスク戦略（分散か集中か）」</b>までを全自動で決定します。<br>
+                                人為的なバイアスを排除し、純粋に過去データからの統計的尤度が最も高い（1等・2等に最も近い）組み合わせを探索します。
                             </div>
 
                             <div id="manualSettings" class="space-y-5 opacity-50 pointer-events-none transition-opacity hidden">
@@ -169,14 +170,16 @@
                                 </div>
                             </div>
 
-                            <div class="pt-5 mt-4 border-t border-slate-700">
-                                <div class="flex justify-between text-xs text-slate-300 mb-2 font-bold">
-                                    <span class="text-blue-400">🛡️ 広域分散 (安全/網張り)</span>
-                                    <span class="text-white">買い目の戦略</span>
-                                    <span class="text-fuchsia-400">⚔️ 集中突破 (ハイリスク)</span>
+                            <div class="pt-5 mt-4 border-t border-slate-700 transition-opacity" id="strategyArea">
+                                <div class="flex justify-between text-xs text-slate-300 mb-2 font-bold items-center">
+                                    <span class="text-blue-400">🛡️ 広域分散 (安全)</span>
+                                    <span class="text-white text-center leading-tight">買い目の戦略<br><span id="strategyAutoLabel" class="text-[9px] text-fuchsia-400 border border-fuchsia-400 rounded px-1 mt-1 inline-block">Auto制御中</span></span>
+                                    <span class="text-fuchsia-400">⚔️ 集中突破 (1等狙い)</span>
                                 </div>
-                                <input type="range" id="strategyRisk" min="0" max="100" value="20" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 shadow-inner">
-                                <p class="text-[10px] text-slate-400 mt-2 leading-tight">※ <b>広域分散:</b> 予想がバラけやすく広く拾いやすいです。<br>※ <b>集中突破:</b> 似た買い目を許容し、当たりが1箇所に集中して上位等級を狙いやすくなります。</p>
+                                <input type="range" id="strategyRisk" min="0" max="100" value="20" disabled class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-fuchsia-500 shadow-inner">
+                                <p class="text-[10px] text-slate-400 mt-2 leading-tight">
+                                    ※ <b>Auto制御時:</b> 次回が「波乱」と予測されれば分散、「順当」と予測されれば集中に自動でスライダーが動きます。手動で動かす場合は上のトグルをOFFにしてください。
+                                </p>
                             </div>
                             
                             <div class="pt-2 mt-4">
@@ -187,7 +190,7 @@
                             </div>
                         </div>
 
-                        <!-- ガチ改善: 予想口数スライダー -->
+                        <!-- 予想口数スライダー -->
                         <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-lg border border-slate-700">
                             <span class="text-sm font-bold text-slate-300 w-1/3">生成する予想口数:</span>
                             <div class="flex items-center gap-3 w-2/3">
@@ -199,7 +202,7 @@
 
                         <button id="btnSimulate" class="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:via-purple-500 hover:to-indigo-500 text-white font-black py-4 px-6 rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.5)] transition flex justify-center items-center gap-3 text-lg group bg-[length:200%_auto] hover:bg-right duration-500">
                             <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                            <span class="relative z-10" id="btnSimulateText">🎰 波乱予測に基づくAI探索を開始</span>
+                            <span class="relative z-10" id="btnSimulateText">🎰 精度特化AIによる探索を開始</span>
                         </button>
                     </div>
 
@@ -224,8 +227,8 @@
             <!-- 結果表示 -->
             <section id="resultSection" class="hidden mt-12 mb-8">
                 <div class="text-center mb-8">
-                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-wide">✨ Tri-Core AI 最適化結果 ✨</h2>
-                    <p class="text-sm text-slate-500 mt-2">波乱予測と設定された戦略に基づき、AIが数万パターンの中から買い目を厳選しました。</p>
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-wide">✨ Ultimate AI 探索結果 ✨</h2>
+                    <p class="text-sm text-slate-500 mt-2">過去データから算出された統計的尤度に最も忠実な買い目を厳選しました。</p>
                 </div>
                 <div id="testResultArea" class="mb-6 max-w-2xl mx-auto"></div>
                 <div id="predictionResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -257,12 +260,14 @@
             axisNumbers: document.getElementById('axisNumbers'),
             btnClearAxis: document.getElementById('btnClearAxis'),
             weightMom: document.getElementById('weightMom'),
+            strategyArea: document.getElementById('strategyArea'),
             strategyRisk: document.getElementById('strategyRisk'),
+            strategyAutoLabel: document.getElementById('strategyAutoLabel'),
             autoTuneToggle: document.getElementById('autoTuneToggle'),
             manualSettings: document.getElementById('manualSettings'),
             autoTuneInfo: document.getElementById('autoTuneInfo'),
             ticketCount: document.getElementById('ticketCount'),
-            ticketCountDisplay: document.getElementById('ticketCountDisplay'), // 追加
+            ticketCountDisplay: document.getElementById('ticketCountDisplay'),
             btnSimulate: document.getElementById('btnSimulate'),
             btnSimulateText: document.getElementById('btnSimulateText'),
             progressArea: document.getElementById('progressArea'),
@@ -286,18 +291,25 @@
             });
         });
 
+        // Auto-Tune トグルの連動
         UI.autoTuneToggle.addEventListener('change', (e) => {
             if(e.target.checked) {
                 UI.manualSettings.classList.add('hidden');
                 UI.autoTuneInfo.style.display = 'block';
+                UI.strategyRisk.disabled = true;
+                UI.strategyArea.classList.add('opacity-70');
+                UI.strategyAutoLabel.classList.remove('hidden');
             } else {
                 UI.manualSettings.classList.remove('hidden');
                 UI.manualSettings.classList.remove('opacity-50', 'pointer-events-none');
                 UI.autoTuneInfo.style.display = 'none';
+                UI.strategyRisk.disabled = false;
+                UI.strategyArea.classList.remove('opacity-70');
+                UI.strategyAutoLabel.classList.add('hidden');
             }
         });
+        UI.strategyArea.classList.add('opacity-70');
 
-        // 口数スライダーの連動
         UI.ticketCount.addEventListener('input', (e) => {
             UI.ticketCountDisplay.innerText = e.target.value;
         });
@@ -331,7 +343,6 @@
         
         UI.btnClearAxis.addEventListener('click', () => { selectedAxisNumbers = []; updateAxisUI(); });
 
-        // ガチ改善: ボーナス数字も抽出するようにパース関数を修正
         function parseLine(line) {
             let nums = line.split(/[\s,]+/).filter(t => /^\d+$/.test(t)).map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 37);
             if (nums.length >= 7) {
@@ -375,7 +386,6 @@
             let intHist = Array.from({length:38}, () => []); 
             let pairEma = Array.from({length:38}, () => Array(38).fill(0));
             let transEma = Array.from({length:38}, () => Array(38).fill(0));
-            // 新規: ボーナス数字からの遷移と前々回からの2次遷移
             let bonusTransEma = Array.from({length:38}, () => Array(38).fill(0));
             let transEma2nd = Array.from({length:38}, () => Array(38).fill(0));
 
@@ -401,7 +411,6 @@
                 
                 main.forEach((num, idx) => posFeatures[idx].push(num));
                 
-                // トラッキング
                 if(prevMain) prevMain.forEach(p => main.forEach(c => transEma[p][c] += w));
                 if(prevBonus) prevBonus.forEach(p => main.forEach(c => bonusTransEma[p][c] += w));
                 if(prevPrevMain) prevPrevMain.forEach(p => main.forEach(c => transEma2nd[p][c] += w));
@@ -492,6 +501,8 @@
                 Chaos: (transMatrix[lastState].Chaos + 1) / (transMatrix[lastState].total + 3)
             };
 
+            let recRisk = Math.min(100, Math.max(0, Math.round((nextProb.Normal - nextProb.Chaos) * 100 + 40)));
+
             return {
                 N: N, lastDraw: prevMain, lastBonus: prevBonus, lastLastDraw: prevPrevMain, pastSets: pastSets,
                 pNum: pNum, intervals: intervals, avgInt: avgInt, momentum: momentum,
@@ -501,7 +512,7 @@
                     oddPdf: createPdf(featuresLists.odd, 7), consecPdf: createPdf(featuresLists.consec, 6),
                     dupePdf: createPdf(featuresLists.dupe, 6), pullPdf: createPdf(featuresLists.pull, 7), slidePdf: createPdf(featuresLists.slide, 7)
                 },
-                trendForecast: { lastState: lastState, nextProb: nextProb, thNormal: thNormal, thChaos: thChaos }
+                trendForecast: { lastState: lastState, nextProb: nextProb, thNormal: thNormal, thChaos: thChaos, recommendedRisk: recRisk }
             };
         }
 
@@ -523,7 +534,7 @@
                 let totalScore = 0;
                 valDraws.forEach(draw => {
                     let main = draw.slice(0, 7);
-                    totalScore += evaluateFitness(main, subModel, w, true); 
+                    totalScore += evaluateFitness(main, subModel, w, 0.5, true); 
                 });
                 
                 if(totalScore > bestScore) { bestScore = totalScore; bestWeights = w; }
@@ -560,6 +571,10 @@
             model = buildStatisticalModel(trainData);
             tunedWeights = calibrateWeights(trainData);
             
+            if(UI.autoTuneToggle.checked) {
+                UI.strategyRisk.value = model.trendForecast.recommendedRisk;
+            }
+
             renderAnalysis();
             UI.analysisSection.classList.remove('hidden');
             UI.simulationSection.classList.remove('hidden');
@@ -603,8 +618,11 @@
                 <div class="flex justify-between items-center text-xs mb-1.5">
                     <span class="text-slate-500">次回の順当(継続)確率:</span><span class="font-bold text-blue-600">${(tf.nextProb.Normal*100).toFixed(1)}%</span>
                 </div>
-                <div class="flex justify-between items-center text-xs mb-1">
+                <div class="flex justify-between items-center text-xs mb-1.5">
                     <span class="text-slate-500">次回の波乱(逆張り)警戒度:</span><span class="font-bold text-fuchsia-600">${((tf.nextProb.Warning + tf.nextProb.Chaos)*100).toFixed(1)}%</span>
+                </div>
+                <div class="flex justify-between items-center text-xs mb-1">
+                    <span class="text-slate-500">🤖 AI推奨 戦略リスク値:</span><span class="font-bold text-fuchsia-400 font-mono">${tf.recommendedRisk}</span>
                 </div>
                 <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1 flex shadow-inner">
                     <div class="bg-blue-500 h-full" style="width: ${tf.nextProb.Normal*100}%" title="順当"></div>
@@ -646,7 +664,6 @@
 
             UI.latestDraw.innerHTML = model.lastDraw.map(n => `<div class="ball-mini w-5 h-5 text-[10px] rounded-full flex items-center justify-center text-white ${getBallColorClass(n)}">${n}</div>`).join('');
             
-            // UI表示用に通常の遷移スコアを計算
             let transScores = Array(38).fill(0);
             model.lastDraw.forEach(prev => { for(let i=1; i<=37; i++) transScores[i] += model.transEma[prev][i]; });
             let pulls = Array.from({length:37}, (_,i)=>i+1).sort((a,b)=>transScores[b]-transScores[a]).slice(0, 6);
@@ -657,12 +674,10 @@
             `).join('');
         }
 
-        // ガチ改善: Deep-Trace（ボーナス・2次遷移）の適応度組み込み
-        function evaluateFitness(combo, m, weights, skipPenalty=false) {
+        // ガチ改善: 精度特化のためJackpotバイアスを削除、ポジション一致度を強化
+        function evaluateFitness(combo, m, weights, riskVal, skipPenalty=false) {
             let score = 0; 
             let f = getFeatures(combo, m.lastDraw);
-            
-            let riskVal = parseInt(UI.strategyRisk.value) / 100;
 
             let varianceSum = m.dist.sum.std * m.dist.sum.std;
             score += -0.5 * Math.log(2 * Math.PI * varianceSum) - (Math.pow(f.sum - m.dist.sum.mean, 2) / (2 * varianceSum));
@@ -677,7 +692,7 @@
                 let pVar = m.dist.pos[i].std * m.dist.pos[i].std;
                 if(pVar > 0) posScore += -0.5 * Math.log(2 * Math.PI * pVar) - (Math.pow(combo[i] - m.dist.pos[i].mean, 2) / (2 * pVar));
             }
-            score += posScore * 2; 
+            score += posScore * 2.5; // 1等狙いのためポジション一致度を強化
 
             let momScore = 0; let pairScore = 0; let coldScore = 0; let transScore = 0;
             for(let i=0; i<7; i++) {
@@ -685,10 +700,9 @@
                 momScore += m.momentum[n];
                 if(m.avgInt[n] > 0) coldScore += (m.intervals[n] / m.avgInt[n]);
                 
-                // Deep-Trace 評価合算
                 if(m.lastDraw) m.lastDraw.forEach(prev => { transScore += m.transEma[prev][n]; });
-                if(m.lastBonus) m.lastBonus.forEach(prev => { transScore += m.bonusTransEma[prev][n] * 1.5; }); // ボーナス昇格は重視
-                if(m.lastLastDraw) m.lastLastDraw.forEach(prev => { transScore += m.transEma2nd[prev][n] * 0.8; }); // 前々回からの復活
+                if(m.lastBonus) m.lastBonus.forEach(prev => { transScore += m.bonusTransEma[prev][n] * 1.5; });
+                if(m.lastLastDraw) m.lastLastDraw.forEach(prev => { transScore += m.transEma2nd[prev][n] * 0.8; });
                 
                 for(let j=i+1; j<7; j++) pairScore += m.pairScores[n][combo[j]];
             }
@@ -704,13 +718,15 @@
             for(let i=0; i<m.pastSets.length; i++) {
                 let c = 0; for(let j=0; j<7; j++) if(m.pastSets[i].has(combo[j])) c++;
                 if(c > maxMatch) maxMatch = c;
-                if(maxMatch >= 5) break; 
+                if(maxMatch >= 6) break; // 1等狙いのため、5個被りまでは許容する可能性がある
             }
             
-            if(maxMatch >= 5) {
-                score -= Math.pow(10, maxMatch); 
+            if(maxMatch >= 6) {
+                score -= Math.pow(10, maxMatch); // 6個被りは過去にほぼないので致死
+            } else if(maxMatch === 5) {
+                score -= 100 * (1 - riskVal); // リスク設定により緩和
             } else if(maxMatch === 4) {
-                score -= 50 * (1 - riskVal); 
+                score -= 20 * (1 - riskVal); 
             }
 
             if(selectedAxisNumbers.length > 0) {
@@ -722,7 +738,6 @@
             return score;
         }
 
-        // ガチ改善: 温度付き確率サンプリングによる初期集団生成 (Temperature-scaled Roulette Selection)
         function weightedRandomCombo(axis, m, temp) {
             let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !axis.includes(n));
             let res = [...axis];
@@ -730,9 +745,9 @@
             let weights = avail.map(n => {
                 let baseProb = m.pNum[n] || 0.01;
                 let mom = m.momentum[n] || 0;
-                let w = baseProb + (mom * 0.5); // 勢いも加味した基本確率
+                let w = baseProb + (mom * 0.5); 
                 if (w <= 0) w = 0.001;
-                return Math.pow(w, 1/temp); // 温度(temp)による確率の平滑化・先鋭化
+                return Math.pow(w, 1/temp); 
             });
 
             while(res.length < 7) {
@@ -753,7 +768,7 @@
             return res.sort((a,b)=>a-b);
         }
 
-        function localSearch(indiv, m, weights) {
+        function localSearch(indiv, m, weights, riskVal) {
             let bestScore = indiv.f;
             let bestCombo = [...indiv.c];
             let improved = false;
@@ -767,7 +782,7 @@
                         let testCombo = [...bestCombo];
                         testCombo[i] = cand;
                         testCombo.sort((a,b)=>a-b);
-                        let score = evaluateFitness(testCombo, m, weights);
+                        let score = evaluateFitness(testCombo, m, weights, riskVal);
                         if(score > bestScore) { bestScore = score; bestCombo = testCombo; improved = true; }
                     }
                 }
@@ -781,11 +796,13 @@
             UI.progressTitle.innerText = "Tri-Core 演算実行中...";
             UI.progressDesc.innerText = "波乱予測に基づき、3つのAIコアがリソースを配分して最適解を探索しています。";
             
-            const MAX_GEN = 120;      
-            const MUTATION_RATE = 0.2; 
-            const ELITE_SIZE = 10;    
+            // ガチ改善: 探索深度の強化 (120 -> 150世代、エリート保護10->15)
+            const MAX_GEN = 150;      
+            const MUTATION_RATE = 0.15; 
+            const ELITE_SIZE = 15;    
             
             let coreConfigs = [];
+            let currentRiskVal = 0.2;
             
             if(UI.autoTuneToggle.checked && tunedWeights) {
                 let tf = model.trendForecast;
@@ -794,10 +811,11 @@
                 let popHot = Math.max(50, Math.floor(totalDynamicPop * tf.nextProb.Normal));
                 let popCold = totalDynamicPop - popHot;
                 
-                coreConfigs.push({ name: "Auto-Tuned", pop: 250, temp: 1.2, w: tunedWeights });
-                coreConfigs.push({ name: "Hot-Seeker", pop: popHot, temp: 0.8, w: { mom: 15, cold: -2, pair: 2, trans: 80 } }); 
-                coreConfigs.push({ name: "Cold-Breaker", pop: popCold, temp: 2.5, w: { mom: -2, cold: 10, pair: 0, trans: 10 } }); 
+                coreConfigs.push({ name: "Auto-Tuned", pop: 250, temp: 1.0, w: tunedWeights });
+                coreConfigs.push({ name: "Macro-Focus", pop: popHot, temp: 0.8, w: { mom: 12, cold: -1, pair: 2, trans: 60 } }); 
+                coreConfigs.push({ name: "Micro-Focus", pop: popCold, temp: 1.5, w: { mom: -1, cold: 8, pair: 1, trans: 20 } }); 
                 
+                currentRiskVal = tf.recommendedRisk / 100;
             } else {
                 let wVal = parseInt(UI.weightMom.value) / 100;
                 let w = {
@@ -806,10 +824,11 @@
                     pair: 1.0, trans: 50
                 };
                 coreConfigs = [
-                    { name: "Manual 1", pop: 250, temp: 1.2, w: w },
-                    { name: "Manual 2", pop: 250, temp: 1.2, w: w },
-                    { name: "Manual 3", pop: 250, temp: 1.2, w: w }
+                    { name: "Manual 1", pop: 250, temp: 1.0, w: w },
+                    { name: "Manual 2", pop: 250, temp: 1.0, w: w },
+                    { name: "Manual 3", pop: 250, temp: 1.0, w: w }
                 ];
+                currentRiskVal = parseInt(UI.strategyRisk.value) / 100;
             }
 
             let bestOverAll = []; 
@@ -824,10 +843,9 @@
                 let activeTemp = activeConfig.temp;
                 
                 let pop = [];
-                // ガチ改善: コアの性格に応じた温度付きルーレットサンプリングで初期集団を生成
                 for(let i=0; i<POP_SIZE; i++) {
                     let c = weightedRandomCombo(selectedAxisNumbers, model, activeTemp);
-                    pop.push({ c: c, f: evaluateFitness(c, model, activeWeights) });
+                    pop.push({ c: c, f: evaluateFitness(c, model, activeWeights, currentRiskVal) });
                 }
                 pop.sort((a,b) => b.f - a.f);
 
@@ -844,7 +862,7 @@
                     let nextPop = [];
                     for(let i=0; i<Math.min(ELITE_SIZE, POP_SIZE); i++) {
                         let e = pop[i];
-                        if(Math.random() < 0.15) e = localSearch(e, model, activeWeights);
+                        if(Math.random() < 0.15) e = localSearch(e, model, activeWeights, currentRiskVal);
                         nextPop.push(e);
                     }
 
@@ -870,7 +888,7 @@
                             }
                         }
                         child.sort((a,b)=>a-b);
-                        nextPop.push({ c: child, f: evaluateFitness(child, model, activeWeights) });
+                        nextPop.push({ c: child, f: evaluateFitness(child, model, activeWeights, currentRiskVal) });
                     }
 
                     pop = nextPop;
@@ -880,7 +898,7 @@
                         if(i >= pop.length) break;
                         let cStr = pop[i].c.join(',');
                         if(!bestOverAll.some(b => b.c.join(',') === cStr)) {
-                            let unifiedScore = evaluateFitness(pop[i].c, model, tunedWeights || coreConfigs[0].w, true);
+                            let unifiedScore = evaluateFitness(pop[i].c, model, tunedWeights || coreConfigs[0].w, currentRiskVal, true);
                             bestOverAll.push({ c: pop[i].c, f: unifiedScore });
                         }
                     }
@@ -895,9 +913,8 @@
 
             let finalSelection = [bestOverAll[0]]; 
             let candidates = bestOverAll.slice(1);
-            let riskVal = parseInt(UI.strategyRisk.value) / 100;
             
-            let requiredDist = 4 - Math.floor(riskVal * 2);
+            let requiredDist = 4 - Math.floor(currentRiskVal * 2);
 
             while(finalSelection.length < targetCount && candidates.length > 0) {
                 let bestCandIdx = -1;
@@ -916,7 +933,7 @@
                     if(minDistance >= requiredDist) {
                         diversityBonus = minDistance * 5;
                     } else {
-                        diversityBonus = -200 * (1 - riskVal);
+                        diversityBonus = -200 * (1 - currentRiskVal);
                     }
                     
                     let evalScore = cand.f + diversityBonus;
@@ -932,7 +949,7 @@
                 if(r === finalSelection[0]) r.displayScore = 99.9;
             });
 
-            return { predictions: finalSelection, usedWeights: tunedWeights || coreConfigs[0].w };
+            return { predictions: finalSelection, usedWeights: tunedWeights || coreConfigs[0].w, usedRisk: currentRiskVal };
         }
 
         UI.btnSimulate.addEventListener('click', async () => {
@@ -946,11 +963,11 @@
             UI.progressBar.style.width = '0%';
 
             let resultData = await runMemeticAlgorithm(tCount);
-            renderResults(resultData.predictions, resultData.usedWeights);
+            renderResults(resultData.predictions, resultData.usedWeights, resultData.usedRisk);
 
             setTimeout(() => {
                 UI.btnSimulate.disabled = false;
-                UI.btnSimulate.innerHTML = `<div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div><span class="relative z-10" id="btnSimulateText">🎰 波乱予測に基づくAI探索を開始</span>`;
+                UI.btnSimulate.innerHTML = `<div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div><span class="relative z-10" id="btnSimulateText">🎰 精度特化AIによる探索を開始</span>`;
                 UI.progressArea.classList.add('opacity-30');
                 UI.progressIcon.classList.remove('animate-spin');
                 UI.progressTitle.innerText = "System Standby";
@@ -961,9 +978,9 @@
             }, 500);
         });
 
-        function renderResults(preds, weights) {
+        function renderResults(preds, weights, usedRisk) {
             if (testTargetDraw) {
-                let teScore = evaluateFitness(testTargetDraw, model, weights, false);
+                let teScore = evaluateFitness(testTargetDraw, model, weights, usedRisk, false);
                 
                 let targetSoi = 0;
                 testTargetDraw.forEach(n => { targetSoi += model.intervals[n]; });
@@ -1006,7 +1023,7 @@
                         ${i===0?'<div class="absolute top-0 left-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-br-lg shadow z-10">Ensemble Best</div>':''}
                         
                         <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 mt-2">
-                            <span class="font-black text-slate-700 text-lg tracking-widest">予想 ${i + 1}</span>
+                            <span class="font-black text-slate-700 text-lg tracking-widest flex items-center">予想 ${i + 1}</span>
                             <div class="text-right">
                                 <div class="text-[10px] text-slate-400">適応度スコア</div>
                                 <div class="text-xl font-black text-indigo-600 font-mono">${p.displayScore.toFixed(1)}</div>
