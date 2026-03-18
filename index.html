@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ロト7 予想シミュレーター Ultimate AI v8.0 (Pure Data-Driven)</title>
+    <title>ロト7 予想シミュレーター Ultimate AI v9.0 (Wave-Trace)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -32,7 +32,7 @@
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden relative">
         <div class="relative bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 p-6 text-white text-center">
             <h1 class="text-3xl font-black mb-2 tracking-wider mt-2">🎯 ロト7 予想シミュレーター Ultimate AI</h1>
-            <p class="text-sm opacity-90 text-indigo-200">純粋データ駆動型(Pure Data-Driven) ＆ 真・精度特化モデル v8.0</p>
+            <p class="text-sm opacity-90 text-indigo-200">波読み(Wave-Trace) ＆ オカルト・トレンド分析搭載 v9.0</p>
         </div>
 
         <div class="p-6 md:p-8 space-y-8">
@@ -122,7 +122,7 @@
                     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
                         <div class="absolute right-0 top-0 h-full w-1 bg-indigo-500"></div>
                         <h3 class="font-bold text-slate-800 text-sm mb-3 border-b border-slate-100 pb-2 flex justify-between items-center">
-                            <span>🧲 Deep-Trace 遷移予測</span>
+                            <span>🧲 Wave-Trace 遷移予測</span>
                             <div class="flex items-center gap-2 bg-slate-50 px-2 py-1 rounded border border-slate-200">
                                 <span class="text-[9px] text-slate-500 font-bold">直前出目:</span><div id="latestDraw" class="flex gap-0.5"></div>
                             </div>
@@ -158,7 +158,7 @@
                             <div id="autoTuneInfo" class="text-xs text-indigo-200 bg-indigo-900/30 p-3 rounded mb-4 border border-indigo-500/30 leading-relaxed">
                                 💡 <b>Full Auto-Tuning 有効:</b> <br>
                                 AIが過去のトレンドを分析し、評価ウェイト、AIの配分、そして<b>「買い目のリスク戦略（分散か集中か）」</b>までを全自動で決定します。<br>
-                                人為的なバイアスを排除し、純粋に過去データからの統計的尤度が最も高い（1等・2等に最も近い）組み合わせを探索します。
+                                🌊 <b>波読み(Wave-Trace)搭載:</b> 連続スライドや番台の空白反発など、ロト特有の「流れ（オカルト）」を捉えて評価します。過剰な引っ張りも抑制します。
                             </div>
 
                             <div id="manualSettings" class="space-y-5 opacity-50 pointer-events-none transition-opacity hidden">
@@ -202,7 +202,7 @@
 
                         <button id="btnSimulate" class="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-500 hover:via-purple-500 hover:to-indigo-500 text-white font-black py-4 px-6 rounded-xl shadow-[0_0_15px_rgba(79,70,229,0.5)] transition flex justify-center items-center gap-3 text-lg group bg-[length:200%_auto] hover:bg-right duration-500">
                             <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                            <span class="relative z-10" id="btnSimulateText">🎰 精度特化AIによる探索を開始</span>
+                            <span class="relative z-10" id="btnSimulateText">🎰 波読みAIによる探索を開始</span>
                         </button>
                     </div>
 
@@ -228,7 +228,7 @@
             <section id="resultSection" class="hidden mt-12 mb-8">
                 <div class="text-center mb-8">
                     <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-wide">✨ Ultimate AI 探索結果 ✨</h2>
-                    <p class="text-sm text-slate-500 mt-2">過去データから算出された統計的尤度に最も忠実な買い目を厳選しました。</p>
+                    <p class="text-sm text-slate-500 mt-2">過去データから算出された統計的尤度と、ロト特有の流れ（波）を考慮した買い目です。</p>
                 </div>
                 <div id="testResultArea" class="mb-6 max-w-2xl mx-auto"></div>
                 <div id="predictionResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -291,7 +291,6 @@
             });
         });
 
-        // Auto-Tune トグルの連動
         UI.autoTuneToggle.addEventListener('change', (e) => {
             if(e.target.checked) {
                 UI.manualSettings.classList.add('hidden');
@@ -359,7 +358,8 @@
             if (num <= 9) return 'ball-yellow'; if (num <= 19) return 'ball-blue'; if (num <= 29) return 'ball-red'; return 'ball-green';
         }
 
-        function getFeatures(nums, prevNums) {
+        // ガチ改善: prevPrevNums を受け取り、波（連鎖）や3連引っ張りを検出する
+        function getFeatures(nums, prevNums, prevPrevNums) {
             let sum = nums.reduce((a,b)=>a+b, 0);
             let odd = nums.filter(n => n%2!==0).length;
             let consec = 0; for(let i=0; i<nums.length-1; i++) if(nums[i+1]-nums[i]===1) consec++;
@@ -371,7 +371,20 @@
             if(prevNums) {
                 nums.forEach(n => { if(prevNums.includes(n-1) || prevNums.includes(n+1)) slide++; });
             }
-            return { sum, odd, consec, dupe, pull, slide };
+            
+            let pull3 = 0;
+            let chainSlide = 0;
+            if(prevNums && prevPrevNums) {
+                nums.forEach(n => {
+                    // 3連引っ張り（前々回、前回、今回）
+                    if (prevNums.includes(n) && prevPrevNums.includes(n)) pull3++;
+                    // 波（連続スライド）: n-2 -> n-1 -> n または n+2 -> n+1 -> n
+                    if (prevNums.includes(n-1) && prevPrevNums.includes(n-2)) chainSlide++;
+                    if (prevNums.includes(n+1) && prevPrevNums.includes(n+2)) chainSlide++;
+                });
+            }
+            
+            return { sum, odd, consec, dupe, pull, slide, pull3, chainSlide };
         }
 
         function buildStatisticalModel(draws) {
@@ -404,7 +417,7 @@
                 let w = weights[i];
                 pastSets.push(new Set(main));
 
-                let f = getFeatures(main, prevMain);
+                let f = getFeatures(main, prevMain, prevPrevMain);
                 featuresLists.sum.push(f.sum); featuresLists.odd.push(f.odd);
                 featuresLists.consec.push(f.consec); featuresLists.dupe.push(f.dupe);
                 featuresLists.pull.push(f.pull); featuresLists.slide.push(f.slide);
@@ -518,18 +531,19 @@
 
         function calibrateWeights(trainData) {
             let valSize = Math.min(5, trainData.length - 20);
-            if(valSize <= 0) return { mom: 8, cold: 1, pair: 1, trans: 50 };
+            if(valSize <= 0) return { mom: 8, cold: 1, pair: 1, trans: 20 };
             
             let valDraws = trainData.slice(-valSize);
             let subTrainData = trainData.slice(0, trainData.length - valSize);
             let subModel = buildStatisticalModel(subTrainData);
             
-            let bestWeights = { mom: 8, cold: 1, pair: 1, trans: 50 };
+            let bestWeights = { mom: 8, cold: 1, pair: 1, trans: 20 };
             let bestScore = -Infinity;
             
+            // ガチ改善: trans(引っ張り)のウェイト上限を下げて過剰評価を防止
             for(let iter=0; iter<200; iter++) {
                 let w = {
-                    mom: Math.random() * 12, cold: Math.random() * 4, pair: Math.random() * 2, trans: Math.random() * 80
+                    mom: Math.random() * 12, cold: Math.random() * 4, pair: Math.random() * 2, trans: Math.random() * 30
                 };
                 let totalScore = 0;
                 valDraws.forEach(draw => {
@@ -674,10 +688,10 @@
             `).join('');
         }
 
-        // ガチ改善: 精度特化のためJackpotバイアスを削除、ポジション一致度を強化
+        // ガチ改善: オカルト・波読み評価の組み込み
         function evaluateFitness(combo, m, weights, riskVal, skipPenalty=false) {
             let score = 0; 
-            let f = getFeatures(combo, m.lastDraw);
+            let f = getFeatures(combo, m.lastDraw, m.lastLastDraw);
 
             let varianceSum = m.dist.sum.std * m.dist.sum.std;
             score += -0.5 * Math.log(2 * Math.PI * varianceSum) - (Math.pow(f.sum - m.dist.sum.mean, 2) / (2 * varianceSum));
@@ -692,7 +706,26 @@
                 let pVar = m.dist.pos[i].std * m.dist.pos[i].std;
                 if(pVar > 0) posScore += -0.5 * Math.log(2 * Math.PI * pVar) - (Math.pow(combo[i] - m.dist.pos[i].mean, 2) / (2 * pVar));
             }
-            score += posScore * 2.5; // 1等狙いのためポジション一致度を強化
+            score += posScore * 2.5; 
+
+            // 🌊 流れ読み（オカルト・波）ロジック
+            // 引っ張りの抑制（3個以上は減点）
+            if (f.pull > 2) score -= (f.pull - 2) * 30;
+            // 3連引っ張りは滅多にないのでペナルティ
+            if (f.pull3 > 0) score -= f.pull3 * 50;
+            // 美しい連鎖（連続スライド）には強力なボーナス
+            if (f.chainSlide > 0) score += f.chainSlide * 40;
+
+            // 番台（ブロック）の流れ（空白地帯の反発）
+            let blocks = [0,0,0,0]; // 1-9, 10-19, 20-29, 30-37
+            combo.forEach(n => blocks[Math.floor((n-1)/10)]++);
+            let prevBlocks = [0,0,0,0];
+            if(m.lastDraw) m.lastDraw.forEach(n => prevBlocks[Math.floor((n-1)/10)]++);
+            
+            for(let i=0; i<4; i++) {
+                if(prevBlocks[i] === 0 && blocks[i] > 0) score += 15; // 前回全滅した番台は反発しやすい
+                if(prevBlocks[i] === 0 && blocks[i] === 0) score -= 15; // 2回連続で全滅するのは不自然
+            }
 
             let momScore = 0; let pairScore = 0; let coldScore = 0; let transScore = 0;
             for(let i=0; i<7; i++) {
@@ -718,13 +751,13 @@
             for(let i=0; i<m.pastSets.length; i++) {
                 let c = 0; for(let j=0; j<7; j++) if(m.pastSets[i].has(combo[j])) c++;
                 if(c > maxMatch) maxMatch = c;
-                if(maxMatch >= 6) break; // 1等狙いのため、5個被りまでは許容する可能性がある
+                if(maxMatch >= 6) break; 
             }
             
             if(maxMatch >= 6) {
-                score -= Math.pow(10, maxMatch); // 6個被りは過去にほぼないので致死
+                score -= Math.pow(10, maxMatch); 
             } else if(maxMatch === 5) {
-                score -= 100 * (1 - riskVal); // リスク設定により緩和
+                score -= 100 * (1 - riskVal); 
             } else if(maxMatch === 4) {
                 score -= 20 * (1 - riskVal); 
             }
@@ -794,9 +827,8 @@
             UI.progressArea.classList.remove('opacity-30');
             UI.progressIcon.classList.add('animate-spin');
             UI.progressTitle.innerText = "Tri-Core 演算実行中...";
-            UI.progressDesc.innerText = "波乱予測に基づき、3つのAIコアがリソースを配分して最適解を探索しています。";
+            UI.progressDesc.innerText = "波読み・オカルトロジックを加味し、3つのAIコアが最適解を探索しています。";
             
-            // ガチ改善: 探索深度の強化 (120 -> 150世代、エリート保護10->15)
             const MAX_GEN = 150;      
             const MUTATION_RATE = 0.15; 
             const ELITE_SIZE = 15;    
@@ -812,8 +844,8 @@
                 let popCold = totalDynamicPop - popHot;
                 
                 coreConfigs.push({ name: "Auto-Tuned", pop: 250, temp: 1.0, w: tunedWeights });
-                coreConfigs.push({ name: "Macro-Focus", pop: popHot, temp: 0.8, w: { mom: 12, cold: -1, pair: 2, trans: 60 } }); 
-                coreConfigs.push({ name: "Micro-Focus", pop: popCold, temp: 1.5, w: { mom: -1, cold: 8, pair: 1, trans: 20 } }); 
+                coreConfigs.push({ name: "Macro-Focus", pop: popHot, temp: 0.8, w: { mom: 12, cold: -1, pair: 2, trans: 30 } }); 
+                coreConfigs.push({ name: "Micro-Focus", pop: popCold, temp: 1.5, w: { mom: -1, cold: 8, pair: 1, trans: 10 } }); 
                 
                 currentRiskVal = tf.recommendedRisk / 100;
             } else {
@@ -821,7 +853,7 @@
                 let w = {
                     mom: wVal >= 0 ? 8 * (1 + wVal) : 8 * (1 - Math.abs(wVal)),
                     cold: wVal >= 0 ? 1 * (1 - wVal) : 3 * (1 + Math.abs(wVal)),
-                    pair: 1.0, trans: 50
+                    pair: 1.0, trans: 20
                 };
                 coreConfigs = [
                     { name: "Manual 1", pop: 250, temp: 1.0, w: w },
@@ -967,7 +999,7 @@
 
             setTimeout(() => {
                 UI.btnSimulate.disabled = false;
-                UI.btnSimulate.innerHTML = `<div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div><span class="relative z-10" id="btnSimulateText">🎰 精度特化AIによる探索を開始</span>`;
+                UI.btnSimulate.innerHTML = `<div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div><span class="relative z-10" id="btnSimulateText">🎰 波読みAIによる探索を開始</span>`;
                 UI.progressArea.classList.add('opacity-30');
                 UI.progressIcon.classList.remove('animate-spin');
                 UI.progressTitle.innerText = "System Standby";
@@ -1016,7 +1048,7 @@
                 if (testTargetDraw) {
                     p.c.forEach(n => { if (testTargetDraw.includes(n)) mCount++; else if (testTargetBonus.includes(n)) bMatch++; });
                 }
-                let f = getFeatures(p.c, model.lastDraw);
+                let f = getFeatures(p.c, model.lastDraw, model.lastLastDraw);
 
                 let cardHtml = `
                     <div class="bg-white p-5 rounded-xl border ${i===0?'border-indigo-400 ring-2 ring-indigo-100 shadow-md':'border-slate-200 shadow-sm'} relative flex flex-col transition hover:shadow-lg">
@@ -1037,8 +1069,8 @@
                         <div class="grid grid-cols-4 gap-1 sm:gap-2 text-[9px] sm:text-[10px] text-slate-500 bg-slate-50 p-2 sm:p-3 rounded-lg border border-slate-100 text-center">
                             <div><span class="block mb-0.5">合計値</span><b class="text-slate-700 font-mono text-[11px] sm:text-xs">${f.sum}</b></div>
                             <div><span class="block mb-0.5">奇:偶</span><b class="text-slate-700 font-mono text-[11px] sm:text-xs">${f.odd}:${7-f.odd}</b></div>
-                            <div><span class="block mb-0.5">引っ張り</span><b class="${f.pull>0?'text-blue-600':'text-slate-700'} font-mono text-[11px] sm:text-xs">${f.pull}</b></div>
-                            <div><span class="block mb-0.5">スライド</span><b class="${f.slide>0?'text-orange-600':'text-slate-700'} font-mono text-[11px] sm:text-xs">${f.slide}</b></div>
+                            <div><span class="block mb-0.5">引っ張り</span><b class="${f.pull>2?'text-red-600':(f.pull>0?'text-blue-600':'text-slate-700')} font-mono text-[11px] sm:text-xs">${f.pull}</b></div>
+                            <div><span class="block mb-0.5">波/ｽﾗｲﾄﾞ</span><b class="${(f.slide+f.chainSlide)>0?'text-orange-600':'text-slate-700'} font-mono text-[11px] sm:text-xs">${f.slide}${f.chainSlide>0?'+🌊':''}</b></div>
                         </div>
                 `;
 
