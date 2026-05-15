@@ -52,9 +52,6 @@
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         .loader-white { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #ffffff; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
     </style>
 </head>
 <body class="text-slate-800 p-4 md:p-8">
@@ -127,7 +124,7 @@
                                 <span>🧠 稼働する6つのAIモデル</span>
                             </h3>
                             
-                            <div class="text-xs text-slate-300 space-y-3 mb-4 leading-relaxed h-56 overflow-y-auto pr-2">
+                            <div class="text-xs text-slate-300 space-y-3 mb-4 leading-relaxed h-48 overflow-y-auto pr-2">
                                 <div class="bg-purple-900/60 p-2 rounded border border-purple-500 shadow-inner"><b class="text-purple-400">🌌 モデルF: 統合メタAI (いいとこ取り)</b><br>下記5つのAIすべての評価スコアを重み付け合算し、あらゆる観点から死角のない「総合力No.1」の買い目を導き出す最強モデルです。</div>
                                 <div class="bg-slate-800 p-2 rounded border border-slate-600"><b class="text-blue-400">🤖 モデルA: パターン認識AI (K近傍法 / KNN)</b><br>直近の出目状況をベクトル化。過去の歴史から「今と最も似ている状況」を探し出し、その「次」に出た傾向を予測します。</div>
                                 <div class="bg-slate-800 p-2 rounded border border-slate-600"><b class="text-amber-400">👑 モデルB: 王道統計 (ゲイル・ハワード型)</b><br>過去の当選番号の「高低バランス」や「奇偶比率」など、統計的に最も発生確率が高い黄金比に合致する買い目を導き出します。</div>
@@ -136,11 +133,24 @@
                                 <div class="bg-slate-800 p-2 rounded border border-slate-600"><b class="text-fuchsia-400">🌊 モデルE: 周期解析 (バイオリズム波形)</b><br>各数字の過去の出現間隔から独自の「サイン波（周期）」を生成。次回がその波の「ピーク（満ち潮）」に当たる数字を狙い撃ちます。</div>
                             </div>
                             
+                            <!-- カスタム数字指定エリア -->
                             <div class="pt-2 mt-4 border-t border-slate-700">
-                                <div class="flex justify-between text-xs text-slate-300 mb-2 mt-4">
-                                    <span>📌 軸数字 (絶対に入れたい数字を4個まで)</span><button id="btnClearAxis" class="text-red-400 hover:text-red-300 text-xs underline">クリア</button>
+                                <div class="flex justify-between text-xs text-slate-300 mb-2 mt-4 items-center">
+                                    <span class="font-bold">🔢 数字の指定 (軸・除外)</span>
+                                    <button id="btnClearNumbers" class="text-red-400 hover:text-red-300 text-xs underline">全てクリア</button>
                                 </div>
-                                <div id="axisNumbers" class="flex flex-wrap gap-2"></div>
+                                <div class="flex gap-4 mb-3">
+                                    <label class="flex items-center gap-1 cursor-pointer bg-slate-800 px-3 py-1.5 rounded border border-slate-600 hover:bg-slate-700 transition">
+                                        <input type="radio" name="selectMode" value="axis" checked class="text-indigo-500 w-4 h-4 focus:ring-indigo-500 bg-slate-700 border-slate-500">
+                                        <span class="text-sm text-indigo-300 font-bold">📌 軸数字にする (青)</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 cursor-pointer bg-slate-800 px-3 py-1.5 rounded border border-slate-600 hover:bg-slate-700 transition">
+                                        <input type="radio" name="selectMode" value="exclude" class="text-red-500 w-4 h-4 focus:ring-red-500 bg-slate-700 border-slate-500">
+                                        <span class="text-sm text-red-300 font-bold">🚫 除外する (赤暗)</span>
+                                    </label>
+                                </div>
+                                <div class="text-[10px] text-slate-400 mb-2 leading-relaxed">※「軸」は最大4個まで。「除外」を選ぶとその数字は予想候補から外れます。ご自身で絞り込んだ数字のみを対象にする場合は、不要な数字を「除外」にしてください。（現在の候補数: <span id="remainCountDisplay" class="font-bold text-white text-xs">37</span>個）</div>
+                                <div id="numberSelector" class="flex flex-wrap gap-2"></div>
                             </div>
                         </div>
 
@@ -209,15 +219,21 @@
         let testTargetDraw = null;
         let testTargetBonus = [];
         let testTargetLabel = "";
+        
+        // 軸数字・除外数字のステート
         let selectedAxisNumbers = [];
+        let excludedNumbers = [];
 
         const UI = {
             csvData: document.getElementById('csvData'),
             btnAnalyze: document.getElementById('btnAnalyze'),
             analysisSection: document.getElementById('analysisSection'),
             simulationSection: document.getElementById('simulationSection'),
-            axisNumbers: document.getElementById('axisNumbers'),
-            btnClearAxis: document.getElementById('btnClearAxis'),
+            
+            numberSelector: document.getElementById('numberSelector'),
+            btnClearNumbers: document.getElementById('btnClearNumbers'),
+            remainCountDisplay: document.getElementById('remainCountDisplay'),
+            
             modelSelector: document.getElementById('modelSelector'),
             ticketCount: document.getElementById('ticketCount'),
             ticketCountDisplay: document.getElementById('ticketCountDisplay'),
@@ -250,32 +266,69 @@
 
         fetch('Data.txt').then(res => res.ok ? res.text() : Promise.reject('err')).then(data => { UI.csvData.value = data; }).catch(e => console.log('Data.txt skip'));
 
-        let axisHtml = '';
+        // === 軸・除外数字ピッカー UI初期化 ===
+        let numHtml = '';
         for(let i=1; i<=37; i++){
-            axisHtml += `<button class="axis-btn w-9 h-9 rounded-full bg-slate-800 border border-slate-600 text-xs font-bold text-slate-300 hover:bg-indigo-500 hover:text-white transition" data-num="${i}">${i}</button>`;
+            numHtml += `<button class="num-btn w-9 h-9 rounded-full bg-slate-800 border border-slate-600 text-xs font-bold text-slate-300 hover:bg-slate-700 transition" data-num="${i}">${i}</button>`;
         }
-        UI.axisNumbers.innerHTML = axisHtml;
+        UI.numberSelector.innerHTML = numHtml;
         
-        function updateAxisUI() {
-            document.querySelectorAll('.axis-btn').forEach(btn => {
+        function updateNumberUI() {
+            document.querySelectorAll('.num-btn').forEach(btn => {
                 let num = parseInt(btn.dataset.num);
+                btn.innerText = num; // リセット
                 if(selectedAxisNumbers.includes(num)) {
-                    btn.className = "axis-btn w-9 h-9 rounded-full bg-indigo-500 text-white font-bold text-xs ring-2 ring-indigo-300 transition";
+                    btn.className = "num-btn w-9 h-9 rounded-full bg-indigo-500 text-white font-bold text-xs ring-2 ring-indigo-300 shadow-md transition";
+                } else if(excludedNumbers.includes(num)) {
+                    btn.className = "num-btn w-9 h-9 rounded-full bg-red-950/40 border border-red-900/50 text-red-500/50 font-bold text-xs transition relative";
                 } else {
-                    btn.className = "axis-btn w-9 h-9 rounded-full bg-slate-800 border border-slate-600 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition";
+                    btn.className = "num-btn w-9 h-9 rounded-full bg-slate-800 border border-slate-600 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition";
                 }
             });
+            let remain = 37 - excludedNumbers.length;
+            UI.remainCountDisplay.innerText = remain;
+            if(remain < 10) {
+                UI.remainCountDisplay.className = "font-bold text-red-400 text-xs";
+            } else {
+                UI.remainCountDisplay.className = "font-bold text-white text-xs";
+            }
         }
         
-        UI.axisNumbers.addEventListener('click', (e) => {
-            if(!e.target.classList.contains('axis-btn')) return;
+        UI.numberSelector.addEventListener('click', (e) => {
+            if(!e.target.classList.contains('num-btn')) return;
             let num = parseInt(e.target.dataset.num);
-            if(selectedAxisNumbers.includes(num)) selectedAxisNumbers = selectedAxisNumbers.filter(n => n !== num);
-            else { if(selectedAxisNumbers.length >= 4) return alert('軸数字は最大4個までです。'); selectedAxisNumbers.push(num); }
-            updateAxisUI();
+            let mode = document.querySelector('input[name="selectMode"]:checked').value;
+
+            if (mode === 'axis') {
+                if(selectedAxisNumbers.includes(num)) {
+                    selectedAxisNumbers = selectedAxisNumbers.filter(n => n !== num);
+                } else {
+                    if(selectedAxisNumbers.length >= 4) return alert('軸数字は最大4個までです。');
+                    if(excludedNumbers.includes(num)) {
+                        excludedNumbers = excludedNumbers.filter(n => n !== num); // 除外から外す
+                    }
+                    selectedAxisNumbers.push(num);
+                }
+            } else if (mode === 'exclude') {
+                if(excludedNumbers.includes(num)) {
+                    excludedNumbers = excludedNumbers.filter(n => n !== num);
+                } else {
+                    let remain = 37 - excludedNumbers.length;
+                    if(remain <= 7) return alert('これ以上除外できません。候補となる数字は最低7個必要です。');
+                    if(selectedAxisNumbers.includes(num)) {
+                        selectedAxisNumbers = selectedAxisNumbers.filter(n => n !== num); // 軸から外す
+                    }
+                    excludedNumbers.push(num);
+                }
+            }
+            updateNumberUI();
         });
         
-        UI.btnClearAxis.addEventListener('click', () => { selectedAxisNumbers = []; updateAxisUI(); });
+        UI.btnClearNumbers.addEventListener('click', () => { 
+            selectedAxisNumbers = []; 
+            excludedNumbers = []; 
+            updateNumberUI(); 
+        });
 
         function parseLine(line) {
             let nums = line.split(/[\s,]+/).filter(t => /^\d+$/.test(t)).map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 37);
@@ -337,7 +390,7 @@
                     let blocks = [0,0,0,0]; main.forEach(n => blocks[Math.floor((n-1)/10)]++);
                     
                     pastFeatures.push({
-                        // 正規化に近い形でベクトル化 [合計/150, 奇数/7, 連番/6, ブロック分布...]
+                        // 正規化に近い形でベクトル化
                         vec: [f.sum/150, f.odd/7, f.consec/6, blocks[0]/7, blocks[1]/7, blocks[2]/7, blocks[3]/7],
                         nextTarget: nextDraw
                     });
@@ -455,6 +508,13 @@
                 if(axisMatch < selectedAxisNumbers.length) return -99999;
             }
 
+            // 共通ペナルティ：除外数字が含まれていたら即死
+            if(excludedNumbers.length > 0) {
+                let excludeMatch = 0;
+                excludedNumbers.forEach(ex => { if(combo.includes(ex)) excludeMatch++; });
+                if(excludeMatch > 0) return -99999;
+            }
+
             let f = getFeatures(combo, m.lastDraw);
 
             // 🤖 モデルA: K近傍法(KNN) パターン認識AI
@@ -542,11 +602,12 @@
             return score;
         }
 
-        // 純粋なランダム生成
-        function randomCombo(axis) {
-            let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !axis.includes(n));
+        // 純粋なランダム生成 (軸と除外を考慮)
+        function randomCombo(axis, exclude) {
+            let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !axis.includes(n) && !exclude.includes(n));
             let res = [...axis];
             while(res.length < 7) {
+                if(avail.length === 0) break; // 安全策
                 let idx = Math.floor(Math.random() * avail.length);
                 res.push(avail.splice(idx, 1)[0]);
             }
@@ -558,7 +619,6 @@
             UI.progressIcon.classList.add('animate-spin');
             UI.progressTitle.innerText = "Hexa-Model 稼働中...";
             
-            // 処理時間増加に対応しつつ十分な探索を行う
             const MAX_GEN = 100;      
             let POP_SIZE = 300;     
             
@@ -575,8 +635,6 @@
             let activePersonas = allPersonas;
             
             if (selectedModelId !== "mix") {
-                // 特定のモデルが指定された場合、そのモデルのみを稼働させる。
-                // 稼働モデルが1つになる分、1世代あたりの探索個体数を増やしてより質の高い予想を抽出する。
                 activePersonas = allPersonas.filter(p => p.id === selectedModelId);
                 POP_SIZE = 500; 
             }
@@ -592,7 +650,7 @@
                 // 初期集団の生成
                 let pop = [];
                 for(let i=0; i<POP_SIZE; i++) {
-                    let c = randomCombo(selectedAxisNumbers);
+                    let c = randomCombo(selectedAxisNumbers, excludedNumbers);
                     pop.push({ c: c, f: evaluatePersonaFitness(c, model, activePersona.id), type: activePersona.id, typeName: activePersona.name });
                 }
                 pop.sort((a,b) => b.f - a.f);
@@ -608,7 +666,6 @@
                     // 進化アルゴリズム
                     let nextPop = pop.slice(0, 10); // エリート保存
                     while(nextPop.length < POP_SIZE) {
-                        // トーナメント選択（エリート偏重を少し緩和し、多様性を確保）
                         let p1Idx = Math.floor(Math.pow(Math.random(), 1.5) * POP_SIZE);
                         let p2Idx = Math.floor(Math.pow(Math.random(), 1.5) * POP_SIZE);
                         let p1 = pop[p1Idx].c; let p2 = pop[p2Idx].c;
@@ -616,12 +673,18 @@
                         // 交叉
                         let childSet = new Set(selectedAxisNumbers);
                         let pool = [...p1, ...p2];
-                        while(childSet.size < 7 && pool.length > 0) childSet.add(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
-                        let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !childSet.has(n));
-                        while(childSet.size < 7) childSet.add(avail.splice(Math.floor(Math.random()*avail.length), 1)[0]);
+                        while(childSet.size < 7 && pool.length > 0) {
+                            let cand = pool.splice(Math.floor(Math.random()*pool.length), 1)[0];
+                            if(!excludedNumbers.includes(cand)) {
+                                childSet.add(cand);
+                            }
+                        }
+                        
+                        let avail = Array.from({length:37}, (_,i)=>i+1).filter(n => !childSet.has(n) && !excludedNumbers.includes(n));
+                        while(childSet.size < 7 && avail.length > 0) childSet.add(avail.splice(Math.floor(Math.random()*avail.length), 1)[0]);
                         let child = Array.from(childSet);
 
-                        // 激しい突然変異（発生率を上げて同じ買い目ばかりになるのを防ぐ）
+                        // 激しい突然変異
                         if(Math.random() < 0.3) {
                             let nonAxis = []; child.forEach((n, i) => { if(!selectedAxisNumbers.includes(n)) nonAxis.push(i); });
                             if(nonAxis.length > 0) {
@@ -630,7 +693,7 @@
                                     if(nonAxis.length === 0) break;
                                     let randNonAxisIdx = Math.floor(Math.random() * nonAxis.length);
                                     let tIdx = nonAxis.splice(randNonAxisIdx, 1)[0];
-                                    let availM = Array.from({length:37}, (_,i)=>i+1).filter(n => !child.includes(n));
+                                    let availM = Array.from({length:37}, (_,i)=>i+1).filter(n => !child.includes(n) && !excludedNumbers.includes(n));
                                     if(availM.length > 0) child[tIdx] = availM[Math.floor(Math.random() * availM.length)];
                                 }
                             }
@@ -642,7 +705,7 @@
                     pop = nextPop;
                     pop.sort((a,b) => b.f - a.f);
 
-                    // 世代ごとにユニークな優秀個体をプール（取得数を増やし、多様性を蓄積）
+                    // 世代ごとにユニークな優秀個体をプール
                     let addedCount = 0;
                     for (let i = 0; i < pop.length; i++) {
                         let cStr = pop[i].c.join(',');
@@ -650,7 +713,7 @@
                             bestOverAll.push(pop[i]);
                             addedCount++;
                         }
-                        if (addedCount >= 5) break; // 各世代で最大5個の新規追加
+                        if (addedCount >= 5) break;
                     }
                 }
             }
@@ -661,7 +724,6 @@
             let finalSelection = [];
 
             if (selectedModelId === "mix") {
-                // 各モデルごとの最良候補を分ける
                 let ensembleCands = bestOverAll.filter(p => p.type === "ensemble").sort((a,b)=>b.f - a.f);
                 let knnCands = bestOverAll.filter(p => p.type === "knn").sort((a,b)=>b.f - a.f);
                 let gailCands = bestOverAll.filter(p => p.type === "gail").sort((a,b)=>b.f - a.f);
@@ -670,7 +732,6 @@
                 let bioCands = bestOverAll.filter(p => p.type === "biorhythm").sort((a,b)=>b.f - a.f);
 
                 let i = 0;
-                // メタAI(いいとこ取り)を筆頭に、6つのモデルから順番に抽出する
                 while(finalSelection.length < targetCount) {
                     let added = false;
                     if (finalSelection.length < targetCount && ensembleCands.length > i) { finalSelection.push(ensembleCands[i]); added = true; }
@@ -684,11 +745,10 @@
                     i++;
                 }
 
-                // 枯渇した場合の安全装置 (不足分を新規生成して評価)
                 let fallbackAttempts = 0;
                 while (finalSelection.length < targetCount && fallbackAttempts < 2000) {
                     fallbackAttempts++;
-                    let c = randomCombo(selectedAxisNumbers);
+                    let c = randomCombo(selectedAxisNumbers, excludedNumbers);
                     let cStr = c.join(',');
                     if (!finalSelection.some(b => b.c.join(',') === cStr)) {
                         finalSelection.push({ c: c, f: evaluatePersonaFitness(c, model, "ensemble"), type: "ensemble", typeName: "🌌 モデルF: 統合メタAI (いいとこ取り)" });
@@ -696,23 +756,19 @@
                 }
                 
             } else {
-                // 特定のモデルだけ出力する場合
                 let cands = bestOverAll.filter(p => p.type === selectedModelId).sort((a,b)=>b.f - a.f);
                 
-                // 【重要】指定口数に満たない場合の安全装置 (不足分を新規生成して評価)
                 let activePersona = activePersonas[0];
                 let fallbackAttempts = 0;
                 while (cands.length < targetCount && fallbackAttempts < 2000) {
                     fallbackAttempts++;
-                    let c = randomCombo(selectedAxisNumbers);
+                    let c = randomCombo(selectedAxisNumbers, excludedNumbers);
                     let cStr = c.join(',');
                     if (!cands.some(b => b.c.join(',') === cStr)) {
                         cands.push({ c: c, f: evaluatePersonaFitness(c, model, activePersona.id), type: activePersona.id, typeName: activePersona.name });
                     }
                 }
-                // 足りない分を足した後に再度ソートする
                 cands.sort((a,b)=>b.f - a.f);
-                
                 finalSelection = cands.slice(0, targetCount);
             }
 
